@@ -1,0 +1,67 @@
+// add-card.modal.ts
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
+import { FaintMemoryState } from '../faint-memory/faint-memory-state';
+import { FAINT_MEMORY_CONTRIBUTION } from '../save-data/constants';
+import { CardType } from '../save-data/models';
+
+// El data inyectado es el ID del personaje
+export type AddCardModalData = { characterId: number };
+
+@Component({
+  selector: 'app-add-card-modal',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="bg-gray-800 rounded-xl p-6 max-w-sm w-full border border-purple-500 shadow-2xl">
+      <h3 class="text-xl font-bold mb-5 text-purple-400 text-center">Elige el tipo de Carta</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          (click)="addCard('NEUTRAL')"
+          class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-700 hover:bg-gray-600 transition shadow-lg border border-gray-600"
+        >
+          <span class="text-3xl">🎴</span>
+          <div class="font-bold text-sm mt-1">Neutral / Prohibida</div>
+          <div class="text-xs text-gray-400 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.NEUTRAL }} FM</div>
+        </button>
+        <button
+          (click)="addCard('MONSTER')"
+          class="flex flex-col items-center justify-center p-4 rounded-lg bg-red-900 hover:bg-red-800 transition shadow-lg border border-red-700"
+        >
+          <span class="text-3xl">🐉</span>
+          <div class="font-bold text-sm mt-1">Monstruo</div>
+          <div class="text-xs text-gray-300 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.MONSTER }} FM</div>
+        </button>
+      </div>
+      <button
+        (click)="close()"
+        class="mt-6 w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition font-medium"
+      >
+        Cancelar
+      </button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class AddCardModal {
+  private readonly stateService = inject(FaintMemoryState);
+  // DIALOG_DATA contiene los datos pasados al modal.
+  private readonly characterId = inject<AddCardModalData>(DIALOG_DATA).characterId;
+  // DialogRef se usa para cerrar el modal y devolver un resultado.
+  private readonly dialogRef = inject(DialogRef<boolean>);
+
+  protected readonly FAINT_MEMORY_CONTRIBUTION = FAINT_MEMORY_CONTRIBUTION;
+
+  addCard(cardType: 'NEUTRAL' | 'MONSTER'): void {
+    // La lógica de mutación se llama a través del StateService
+    // El CardType para Neutral aplica también a Forbidden para el cálculo de FM.
+    const type: CardType = cardType === 'NEUTRAL' ? 'NEUTRAL' : 'MONSTER';
+    this.stateService.addDeckCard(this.characterId, type);
+    this.dialogRef.close(true); // Cerrar y retornar true
+  }
+
+  close(): void {
+    this.dialogRef.close(false); // Cerrar y retornar false
+  }
+}

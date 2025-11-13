@@ -1,1 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+
+.btn-action {
+  @apply px-3 py-1 text-xs font-semibold rounded-md text-gray-900 shadow-md hover:opacity-90 transition duration-150;
+}

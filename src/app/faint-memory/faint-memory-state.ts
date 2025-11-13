@@ -1,0 +1,487 @@
+import { computed, inject, Injectable, signal, Signal } from '@angular/core';
+import {
+  TIERS_SAVE_DATA,
+  ACTION_COSTS,
+  FAINT_MEMORY_CONTRIBUTION,
+  EPIPHANY_MODIFIERS,
+} from '../save-data/constants';
+import {
+  CardType,
+  CharacterState,
+  HistoryEntry,
+  GlobalRunState,
+  CardInstance,
+  EpiphanyTargetCard,
+} from '../save-data/models';
+
+// --- UTILITIES ---
+let cardIdCounter = 0;
+const generateCardId = (type: CardType): string => {
+  cardIdCounter++;
+  // Usamos 'NEUTRAL' para el ID base de 'NEUTRAL' y 'FORBIDDEN'
+  const idType = type === 'FORBIDDEN' ? 'NEUTRAL' : type.charAt(0);
+  return `${idType}_${cardIdCounter}`;
+};
+
+const INITIAL_CHARACTER_STATE: CharacterState = {
+  id: 1,
+  name: 'Nuevo Personaje',
+  deck: [],
+  additionalDuplicationCost: 0,
+  actionLogs: {
+    removals: 0,
+    duplications: 0,
+    convertions: 0,
+    characterCardRemovals: 0,
+  },
+};
+
+export interface CalculatedCharacterState extends CharacterState {
+  score: number;
+  history: HistoryEntry[];
+}
+
+// --- SERVICE ---
+
+@Injectable({ providedIn: 'root' })
+export class FaintMemoryState {
+  // --- STATE SIGNALS ---
+  // El estado de los modales (showModal) fue eliminado.
+  protected readonly globalState = signal<GlobalRunState>({
+    tier: 1,
+    isNightmare: false,
+  });
+
+  protected readonly characters = signal<CharacterState[]>([
+    { ...INITIAL_CHARACTER_STATE, id: 1, name: 'Personaje 1' },
+  ]);
+
+  // --- PUBLIC READ-ONLY SIGNALS (Para consumo por componentes) ---
+  readonly globalState$ = this.globalState.asReadonly();
+  readonly characters$ = this.characters.asReadonly();
+
+  // --- COMPUTED STATE (Calculated Properties) ---
+
+  readonly totalCap = computed(() => {
+    const global = this.globalState();
+    const currentTierData =
+      TIERS_SAVE_DATA.find((t) => t.tier === global.tier) || TIERS_SAVE_DATA[0];
+
+    let cap = currentTierData.points;
+    if (global.isNightmare) {
+      cap += ACTION_COSTS.NIGHTMARE_CAP_BONUS;
+    }
+    return cap;
+  });
+
+  // El cálculo principal se mantiene en el servicio
+  readonly calculatedCharacters = computed<CalculatedCharacterState[]>(() => {
+    const global = this.globalState();
+    return this.characters().map((char) => {
+      // Clonar para asegurar que el cálculo sea puro
+      const charClone = JSON.parse(JSON.stringify(char));
+      const { score, history } = this.calculateFaintMemory(charClone, global);
+      return {
+        ...charClone,
+        score,
+        history,
+      } as CalculatedCharacterState;
+    });
+  });
+
+  // --- PUBLIC UTILITY METHODS ---
+
+  getEpiphanyStatus(card: CardInstance) {
+    const hasRegular = card.epiphanyLogs.some((log) => log.type === 'REGULAR');
+    const hasDivine = card.epiphanyLogs.some((log) => log.type === 'DIVINE');
+
+    return {
+      hasLogs: card.epiphanyLogs.length > 0,
+      hasRegular,
+      hasDivine,
+      isRegularOnly: hasRegular && !hasDivine,
+      isMixed: hasRegular && hasDivine,
+      isDivineOnly: hasDivine && !hasRegular,
+    };
+  }
+
+  // --- PUBLIC STATE MUTATION METHODS ---
+
+  updateGlobalTier(tier: number): void {
+    if (tier < 1) tier = 1;
+    this.globalState.update((state) => ({ ...state, tier }));
+  }
+
+  updateGlobalNightmare(isNightmare: boolean): void {
+    this.globalState.update((state) => ({ ...state, isNightmare }));
+  }
+
+  updateCharacter(id: number, key: keyof CharacterState, value: any): void {
+    this.characters.update((chars) =>
+      chars.map((char) => {
+        if (char.id === id) {
+          // Usar la mutación más segura con JSON.parse/stringify
+          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+
+          if (key === 'additionalDuplicationCost') {
+            updatedChar.additionalDuplicationCost = Math.max(0, value);
+          } else if (key in updatedChar) {
+            (updatedChar as any)[key] = value;
+          }
+
+          return updatedChar;
+        }
+        return char;
+      })
+    );
+  }
+
+  // --- Deck Mutation ---
+
+  /**
+   * Añade una nueva carta al deck del personaje.
+   * @param id ID del personaje.
+   * @param cardType Tipo de la carta a añadir.
+   */
+  addDeckCard(id: number, cardType: CardType): void {
+    this.characters.update((chars) =>
+      chars.map((char) => {
+        if (char.id === id) {
+          const newCard: CardInstance = {
+            id: generateCardId(cardType),
+            type: cardType,
+            epiphanyLogs: [],
+          };
+          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+
+          updatedChar.deck.push(newCard);
+
+          return updatedChar;
+        }
+        return char;
+      })
+    );
+  }
+
+  removeDeckCard(id: number, cardId: string): void {
+    this.characters.update((chars) =>
+      chars.map((char) => {
+        if (char.id === id) {
+          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+
+          const cardIndex = updatedChar.deck.findIndex((card) => card.id === cardId);
+
+          if (cardIndex !== -1) {
+            updatedChar.deck.splice(cardIndex, 1);
+            updatedChar.actionLogs.removals += 1;
+          }
+
+          return updatedChar;
+        }
+        return char;
+      })
+    );
+  }
+
+  duplicateCard(id: number, cardId: string): void {
+    this.characters.update(
+      (chars) =>
+        chars.map((char) => {
+          if (char.id === id) {
+            const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+
+            const cardToDuplicate = updatedChar.deck.find((card) => card.id === cardId);
+
+            if (cardToDuplicate) {
+              const newCard: CardInstance = {
+                ...cardToDuplicate,
+                id: generateCardId(cardToDuplicate.type),
+              };
+              updatedChar.deck.push(newCard);
+
+              updatedChar.actionLogs.duplications += 1;
+            }
+
+            return updatedChar;
+          }
+
+          return char;
+        }) as CharacterState[]
+    );
+  }
+
+  /**
+   * Aplica la conversión de costo adicional de duplicación a puntos de Conversión.
+   * @param id ID del personaje.
+   */
+  convertCard(id: number): void {
+    this.characters.update((chars) =>
+      chars.map((char) => {
+        if (char.id === id) {
+          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+          const costValue = updatedChar.additionalDuplicationCost;
+
+          if (costValue > 0) {
+            // Sumar el costo adicional como conversiones
+            updatedChar.actionLogs.convertions += costValue;
+            // Reiniciar el costo adicional
+            updatedChar.additionalDuplicationCost = 0;
+          }
+
+          return updatedChar;
+        }
+        return char;
+      })
+    );
+  }
+
+  /**
+   * Añade un log de Epifanía a una carta específica.
+   */
+  addEpiphany(
+    charId: number,
+    cardId: string,
+    type: 'REGULAR' | 'DIVINE',
+    targetCard: EpiphanyTargetCard
+  ): void {
+    this.characters.update((chars) =>
+      chars.map((char) => {
+        if (char.id === charId) {
+          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+          const cardToUpdate = updatedChar.deck.find((card) => card.id === cardId);
+
+          if (cardToUpdate) {
+            // Clonamos el array de logs para evitar mutación directa
+            const currentLogs = [...cardToUpdate.epiphanyLogs];
+
+            const exists = currentLogs.some(
+              (log) => log.type === type && log.targetCard === targetCard
+            );
+
+            if (!exists) {
+              currentLogs.push({ type, targetCard });
+              cardToUpdate.epiphanyLogs = currentLogs;
+            }
+          }
+          return updatedChar;
+        }
+        return char;
+      })
+    );
+  }
+
+  /**
+   * Remueve un log de Epifanía por índice.
+   */
+  removeEpiphany(charId: number, cardId: string, index: number): void {
+    this.characters.update((chars) =>
+      chars.map((char) => {
+        if (char.id === charId) {
+          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+          const cardToUpdate = updatedChar.deck.find((card) => card.id === cardId);
+
+          if (cardToUpdate && index >= 0 && index < cardToUpdate.epiphanyLogs.length) {
+            // Usamos splice en la copia para remover el elemento.
+            cardToUpdate.epiphanyLogs.splice(index, 1);
+          }
+
+          return updatedChar;
+        }
+        return char;
+      })
+    );
+  }
+
+  // --- Character List Mutation ---
+
+  addCharacter(): void {
+    const newId =
+      this.characters().length > 0 ? Math.max(...this.characters().map((c) => c.id)) + 1 : 1;
+
+    this.characters.update((chars) => [
+      ...chars,
+      {
+        ...INITIAL_CHARACTER_STATE,
+        id: newId,
+        name: `Personaje ${newId}`,
+      },
+    ]);
+  }
+
+  removeCharacter(id: number): void {
+    this.characters.update((chars) => chars.filter((char) => char.id !== id));
+  }
+
+  // --- CORE FM CALCULATION LOGIC (Private) ---
+
+  private calculateFaintMemory(
+    character: CharacterState,
+    globalState: GlobalRunState
+  ): { score: number; history: HistoryEntry[] } {
+    let currentScore = 0;
+    const history: HistoryEntry[] = [];
+
+    const addHistory = (type: HistoryEntry['type'], description: string, points: number) => {
+      currentScore += points;
+      history.push({
+        type,
+        description,
+        points,
+        cumulativeFaintMemory: currentScore,
+      });
+    };
+
+    // ------------------------------------------------------------------
+    // A. CÁLCULO DE CONTRIBUCIÓN BASE DEL INVENTARIO FINAL (Deck)
+    // ------------------------------------------------------------------
+
+    let deckContribution = 0;
+    let divineEpiphaniesCount = 0;
+    const appliedRegularEpiphanies: Record<EpiphanyTargetCard, boolean> = {
+      NEUTRAL_FORBIDDEN: false,
+      MONSTER: false,
+      BASIC: false,
+      UNIQUE: false,
+    };
+
+    for (const card of character.deck) {
+      const cardTypeKey = card.type as keyof typeof FAINT_MEMORY_CONTRIBUTION;
+      deckContribution += FAINT_MEMORY_CONTRIBUTION[cardTypeKey];
+
+      for (const log of card.epiphanyLogs) {
+        if (log.type === 'DIVINE') {
+          divineEpiphaniesCount++;
+        } else if (log.type === 'REGULAR') {
+          if (card.type === 'NEUTRAL' || card.type === 'FORBIDDEN') {
+            appliedRegularEpiphanies['NEUTRAL_FORBIDDEN'] = true;
+          } else if (card.type === 'MONSTER') {
+            appliedRegularEpiphanies['MONSTER'] = true;
+          }
+        }
+      }
+    }
+
+    if (deckContribution !== 0) {
+      addHistory('DECK', `Contribución Base del Deck`, deckContribution);
+    }
+
+    // ------------------------------------------------------------------
+    // B. CÁLCULO DE MODIFICADORES DE EPIFANÍA
+    // ------------------------------------------------------------------
+
+    if (divineEpiphaniesCount > 0) {
+      const divineBonus = divineEpiphaniesCount * EPIPHANY_MODIFIERS.DIVINE_BONUS;
+      addHistory('ACTION', `Bono: Epifanías Divinas (${divineEpiphaniesCount}x)`, divineBonus);
+    }
+
+    if (appliedRegularEpiphanies['NEUTRAL_FORBIDDEN']) {
+      addHistory(
+        'ACTION',
+        'Bono: Epifanía Regular (Neutral/Prohibida)',
+        EPIPHANY_MODIFIERS.REGULAR_BONUS
+      );
+    }
+    if (appliedRegularEpiphanies['MONSTER']) {
+      addHistory('ACTION', 'Bono: Epifanía Regular (Monstruo)', EPIPHANY_MODIFIERS.REGULAR_BONUS);
+    }
+
+    // ------------------------------------------------------------------
+    // C. CÁLCULO DE ACCIONES (Costos/Puntos)
+    // ------------------------------------------------------------------
+
+    const actionKeys = Object.keys(ACTION_COSTS.REMOVE_CARDS_PROGRESSION);
+
+    const getProgressionCost = (
+      count: number,
+      progressionMap: typeof ACTION_COSTS.REMOVE_CARDS_PROGRESSION
+    ): number => {
+      // El índice se basa en la cuenta (1-indexed)
+      const index = Math.min(count, actionKeys.length);
+      const key = actionKeys[index - 1];
+      return key ? progressionMap[key as keyof typeof progressionMap] : 0;
+    };
+
+    // 1. Removals Cost (Costo Progresivo)
+    const removalCost = getProgressionCost(
+      character.actionLogs.removals,
+      ACTION_COSTS.REMOVE_CARDS_PROGRESSION
+    );
+
+    if (character.actionLogs.removals > 0) {
+      addHistory('ACTION', `Costo: Eliminación (${character.actionLogs.removals}x)`, -removalCost);
+    }
+
+    // 2. Character Card Removals Bonus
+    if (character.actionLogs.characterCardRemovals > 0) {
+      const charRemovalBonus =
+        character.actionLogs.characterCardRemovals * ACTION_COSTS.REMOVE_CHARACTER_CARD_BONUS;
+      addHistory(
+        'ACTION',
+        `Bono: Eliminación de Carta de Personaje (${character.actionLogs.characterCardRemovals}x)`,
+        charRemovalBonus
+      );
+    }
+
+    // 3. Duplication Cost
+    const duplicationCost = getProgressionCost(
+      character.actionLogs.duplications,
+      ACTION_COSTS.DUPLICATE_CARDS_PROGRESSION
+    );
+    if (character.actionLogs.duplications > 0) {
+      addHistory(
+        'ACTION',
+        `Costo: Duplicación (${character.actionLogs.duplications}x)`,
+        -duplicationCost
+      );
+    }
+
+    // 4. Additional Duplication Cost (Manual Input) - COSTO
+    if (character.additionalDuplicationCost > 0) {
+      addHistory(
+        'ACTION',
+        `Costo Adicional: Duplicación (Manual)`,
+        -Math.abs(character.additionalDuplicationCost)
+      );
+    }
+
+    // 5. Conversion Bonus - BONO
+    if (character.actionLogs.convertions > 0) {
+      const conversionTotalBonus = character.actionLogs.convertions * ACTION_COSTS.CONVERT_CARD;
+      addHistory(
+        'ACTION',
+        `Puntos: Conversión (${character.actionLogs.convertions}x)`,
+        conversionTotalBonus
+      );
+    }
+
+    // ------------------------------------------------------------------
+    // D. CÁLCULO Y APLICACIÓN DEL LÍMITE (CAP) GLOBAL
+    // ------------------------------------------------------------------
+
+    const currentTierData =
+      TIERS_SAVE_DATA.find((t) => t.tier === globalState.tier) || TIERS_SAVE_DATA[0];
+
+    let totalCap = currentTierData.points;
+
+    if (globalState.isNightmare) {
+      totalCap += ACTION_COSTS.NIGHTMARE_CAP_BONUS;
+    }
+
+    const scoreBeforeCap = currentScore;
+    const finalScore = Math.min(scoreBeforeCap, totalCap);
+
+    if (scoreBeforeCap > totalCap) {
+      const reduction = totalCap - scoreBeforeCap;
+      addHistory('DECK', `❌ Límite (CAP) aplicado`, reduction);
+    } else {
+      addHistory('DECK', `Límite (CAP) Potencial: ${totalCap}`, 0);
+    }
+
+    // Filtra las entradas con 0 puntos, excepto si son el log de límite aplicado
+    const filteredHistory = history.filter(
+      (entry) => entry.points !== 0 || entry.description.includes('❌ Límite (CAP) aplicado')
+    );
+
+    return { score: finalScore, history: filteredHistory };
+  }
+}
