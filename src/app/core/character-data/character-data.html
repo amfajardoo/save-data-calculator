@@ -12,18 +12,18 @@
     />
 
     <div class="flex items-center gap-2">
-      <span class="text-sm font-bold text-purple-200 whitespace-nowrap"
+      <span class="text-base font-bold text-purple-200 whitespace-nowrap"
         >{{ character().score }}/{{ totalCap() }}</span
       >
       <button
         (click)="removeCharacter()"
-        class="p-0.5 hover:bg-rose-600 rounded transition"
+        class="p-1 hover:bg-rose-600 rounded transition"
         title="Eliminar personaje"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -40,20 +40,19 @@
   </div>
 
   <div class="p-2 space-y-2 overflow-y-auto flex-1 custom-scrollbar">
-    <!-- Deck Section - Ultra Compact Grid (4 columns) -->
     <div>
       <div class="flex items-center justify-between mb-1">
-        <h3 class="text-[10px] font-semibold text-slate-400 uppercase">
+        <h3 class="text-sm font-semibold text-slate-400 uppercase">
           Deck ({{ character().deck.length }})
         </h3>
         <button
           (click)="handleOpenAddCardModal()"
-          class="px-1.5 py-0.5 bg-indigo-600 hover:bg-indigo-700 rounded text-[10px] flex items-center gap-0.5 transition font-medium"
+          class="px-1.5 py-0.5 bg-indigo-600 hover:bg-indigo-700 rounded text-base flex items-center gap-0.5 transition font-medium"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="10"
-            height="10"
+            width="12"
+            height="12"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -68,19 +67,17 @@
         </button>
       </div>
 
-      <!-- Empty State -->
       @if (character().deck.length === 0) {
         <button
           (click)="addInitialCards()"
-          class="w-full py-1.5 bg-purple-700 hover:bg-purple-800 rounded text-[10px] transition font-medium"
+          class="w-full py-1.5 bg-purple-700 hover:bg-purple-800 rounded text-sm transition font-medium"
         >
           + Añadir cartas iniciales
         </button>
       }
 
-      <!-- Cards Grid - 4 columns for more density -->
       @if (character().deck.length > 0) {
-        <div class="grid grid-cols-4 gap-1 mb-1.5">
+        <div class="grid grid-cols-3 gap-1 mb-1.5">
           @for (card of character().deck; track card.id; let index = $index) {
             @let status = getEpiphanyStatus(card);
 
@@ -98,7 +95,6 @@
               [class.from-rose-600]="card.type === 'FORBIDDEN'"
               [class.to-rose-700]="card.type === 'FORBIDDEN'"
             >
-              <!-- Epiphany Indicator -->
               @if (status.isMixed) {
                 <div
                   class="absolute -top-1 -right-1 w-5 h-5 rounded-full border-2 border-slate-900 bg-linear-to-br from-yellow-400 to-fuchsia-500 flex items-center justify-center shadow-lg z-10"
@@ -157,40 +153,37 @@
                 </div>
               }
 
-              <!-- Card Type -->
               <div class="mb-0.5 flex items-center gap-0.5">
                 @if (card.isDuplicate) {
                   <div
-                    class="bg-slate-900 bg-opacity-90 px-1 py-0.5 rounded-sm text-[7px] font-bold text-emerald-400 border border-emerald-500 leading-none z-10"
+                    class="bg-slate-900 bg-opacity-90 px-1 py-0.5 rounded-sm text-sm font-bold text-emerald-400 border border-emerald-500 leading-none z-10"
                   >
                     DUP.
                   </div>
                 }
-                <span class="text-[8px] font-bold text-white uppercase block leading-tight">{{
+                <span class="text-base font-bold text-white uppercase block leading-tight">{{
                   card.type
                 }}</span>
               </div>
 
-              <!-- Card Name Input -->
               <input
                 type="text"
                 [ngModel]="card.name"
                 (ngModelChange)="updateCardName(card.id, $event)"
-                class="w-full bg-black bg-opacity-30 text-[7px] px-0.5 py-0.5 rounded mb-0.5 border border-transparent focus:border-white focus:outline-none text-white placeholder-gray-400"
+                class="w-full bg-black bg-opacity-30 text-sm px-0.5 py-0.5 rounded mb-0.5 border border-transparent focus:border-white focus:outline-none text-white placeholder-gray-400"
                 placeholder="Nombre..."
               />
 
-              <!-- Action Buttons -->
               <div class="flex gap-0.5 mb-0.5">
                 <button
                   (click)="removeDeckCard(card.id)"
                   title="Remover"
-                  class="flex-1 bg-rose-700 bg-opacity-80 hover:bg-opacity-100 rounded px-0.5 py-0.5 transition flex items-center justify-center"
+                  class="flex-1 bg-rose-700 bg-opacity-80 hover:bg-opacity-100 rounded px-1 py-1 transition flex items-center justify-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="8"
-                    height="8"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -203,12 +196,12 @@
                 <button
                   (click)="duplicateCard(card.id)"
                   title="Duplicar"
-                  class="flex-1 bg-purple-700 bg-opacity-80 hover:bg-opacity-100 rounded px-0.5 py-0.5 transition flex items-center justify-center"
+                  class="flex-1 bg-purple-700 bg-opacity-80 hover:bg-opacity-100 rounded px-1 py-1 transition flex items-center justify-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="8"
-                    height="8"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -230,12 +223,12 @@
                     )
                   "
                   title="Epifanía"
-                  class="flex-1 bg-yellow-500 bg-opacity-80 hover:bg-opacity-100 rounded px-0.5 py-0.5 transition flex items-center justify-center"
+                  class="flex-1 bg-yellow-500 bg-opacity-80 hover:bg-opacity-100 rounded px-1 py-1 transition flex items-center justify-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="8"
-                    height="8"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -249,11 +242,10 @@
                 </button>
               </div>
 
-              <!-- Convert Button for BASIC cards -->
               @if (card.type === 'BASIC') {
                 <button
                   (click)="convertCard(index)"
-                  class="w-full bg-emerald-600 hover:bg-emerald-700 rounded px-0.5 py-0.5 text-[7px] transition font-medium text-white"
+                  class="w-full bg-emerald-600 hover:bg-emerald-700 rounded px-0.5 py-0.5 text-sm transition font-medium text-white"
                 >
                   → Neutral
                 </button>
@@ -264,16 +256,15 @@
       }
     </div>
 
-    <!-- History Section - Compact with Custom Scrollbar -->
     <div class="bg-slate-800 rounded p-1.5 border border-slate-700">
-      <h3 class="text-[10px] font-semibold text-slate-400 mb-1 uppercase">Historial</h3>
+      <h3 class="text-sm font-semibold text-slate-400 mb-1 uppercase">Historial</h3>
       <div class="space-y-0.5 max-h-28 overflow-y-auto pr-1 custom-scrollbar">
         @if (character().history.length === 0) {
-          <p class="text-[9px] text-slate-500 italic">Sin historial</p>
+          <p class="text-sm text-slate-500 italic">Sin historial</p>
         } @else {
           @for (entry of character().history.slice().reverse(); track $index) {
             <div
-              class="flex justify-between items-center text-[9px] border-b border-slate-700 pb-0.5 last:border-0 gap-2"
+              class="flex justify-between items-center text-sm border-b border-slate-700 pb-0.5 last:border-0 gap-2"
             >
               <span class="text-slate-400 truncate flex-1">{{ entry.description }}</span>
               <span

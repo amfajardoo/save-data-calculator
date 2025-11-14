@@ -1,16 +1,9 @@
-/* save-data.css */
-
-/* Estilos de fondo y centrado para el CDK Dialog (Es esencial para un buen diseño) */
 .cdk-global-overlay-wrapper {
-  /* Usar flexbox para centrar fácilmente */
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Estilo para el panel del modal (lo que contiene el componente) */
 .app-cdk-modal {
-  /* Estilos para el contenedor del modal */
   max-width: 90vw;
-  /* El componente modal debe manejar el ancho interno (max-w-sm en el modal.ts) */
 }

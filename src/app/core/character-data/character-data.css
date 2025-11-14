@@ -1,25 +1,21 @@
-/* character-data.css */
-
-/* Custom Scrollbar for History */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgb(30 41 59); /* slate-800 */
+  background: rgb(30 41 59);
   border-radius: 2px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgb(71 85 105); /* slate-600 */
+  background: rgb(71 85 105);
   border-radius: 2px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgb(100 116 139); /* slate-500 */
+  background: rgb(100 116 139);
 }
 
-/* Firefox scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgb(71 85 105) rgb(30 41 59);
