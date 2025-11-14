@@ -16,8 +16,10 @@ export type CardType = 'NEUTRAL' | 'FORBIDDEN' | 'MONSTER' | 'BASIC' | 'UNIQUE';
 export interface CardInstance {
   id: string;
   type: CardType;
+  name: string;
   epiphanyLogs: EpiphanyLog[];
   isConvertion: boolean;
+  isDuplicate: boolean;
 }
 
 export type CharacterDeck = CardInstance[];

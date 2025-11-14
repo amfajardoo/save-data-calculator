@@ -1,245 +1,294 @@
-<div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl space-y-4 mt-4">
+<div
+  class="bg-slate-900 rounded-lg border border-slate-700 shadow-xl overflow-hidden flex flex-col"
+  [style.max-height]="'calc(100vh - 120px)'"
+>
+  <!-- Character Header - Ultra Compact -->
   <div
-    class="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center border-b border-gray-700 pb-3 gap-2"
+    class="bg-linear-to-r from-purple-800 to-indigo-800 px-2 py-1.5 flex items-center justify-between border-b border-purple-600 shrink-0"
   >
     <input
       type="text"
       [ngModel]="character().name"
       (ngModelChange)="updateCharacter('name', $event)"
-      class="text-xl font-bold bg-transparent border-none outline-none focus:ring-1 focus:ring-purple-400 rounded p-1 -m-1"
+      class="bg-transparent border-none text-xs font-bold focus:outline-none focus:ring-1 focus:ring-purple-400 rounded px-1 flex-1 text-white"
     />
-    <div class="text-3xl font-extrabold text-purple-400">
-      Total FM: {{ character().score }} / {{ totalCap() }}
+    <div class="flex items-center gap-2">
+      <span class="text-sm font-bold text-purple-200 whitespace-nowrap"
+        >{{ character().score }}/{{ totalCap() }}</span
+      >
+      <button
+        (click)="removeCharacter()"
+        class="p-0.5 hover:bg-rose-600 rounded transition"
+        title="Eliminar personaje"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 6h18"></path>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+        </svg>
+      </button>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="md:col-span-2 space-y-6">
-      <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
-        <h3 class="text-lg font-semibold mb-3 text-purple-300">
-          Deck Actual
-          <span class="text-sm text-gray-500 font-normal ml-2"
-            >({{ character().deck.length }} Cartas)</span
-          >
+  <div class="p-2 space-y-2 overflow-y-auto flex-1 custom-scrollbar">
+    <!-- Deck Section - Ultra Compact Grid (4 columns) -->
+    <div>
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-[10px] font-semibold text-slate-400 uppercase">
+          Deck ({{ character().deck.length }})
         </h3>
-
-        @if (character().deck.length === 0) {
-          <button
-            (click)="addInitialCards()"
-            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition font-medium"
-          >
-            ➕ Añadir todas las cartas iniciales
-          </button>
-        } @else {
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            @for (card of character().deck; track card.id; let index = $index) {
-              @let status = getEpiphanyStatus(card);
-
-              @if (card.type === 'FORBIDDEN' || card.type === 'NEUTRAL') {
-                <div
-                  class="p-3 rounded-lg relative group transition border"
-                  [class.bg-red-800]="card.type === 'FORBIDDEN'"
-                  [class.border-red-600]="card.type === 'FORBIDDEN'"
-                  [class.bg-gray-700]="card.type === 'NEUTRAL'"
-                  [class.border-gray-600]="card.type === 'NEUTRAL'"
-                >
-                  <span class="font-bold text-sm" [class.text-red-300]="card.type === 'FORBIDDEN'">
-                    {{ card.type === 'FORBIDDEN' ? 'Prohibida' : 'Neutral' }}
-                  </span>
-                  <span class="block text-xs text-gray-400"
-                    >+{{ FAINT_MEMORY_CONTRIBUTION[card.type] }} FM</span
-                  >
-                  <div class="flex gap-2 mt-2">
-                    <button
-                      (click)="removeDeckCard(card.id)"
-                      class="flex-1 text-xs bg-red-800 hover:bg-red-700 rounded px-2 py-1"
-                    >
-                      Remover
-                    </button>
-                    <button
-                      (click)="duplicateCard(card.id)"
-                      class="flex-1 text-xs bg-purple-700 hover:bg-purple-600 rounded px-2 py-1"
-                    >
-                      Duplicar
-                    </button>
-                  </div>
-
-                  <button
-                    (click)="handleOpenEpiphanyModalForCard(card.id, 'NEUTRAL_FORBIDDEN')"
-                    class="epiphany-button absolute top-1 right-1 p-1 rounded-full text-xs font-bold shadow-md bg-yellow-500 hover:bg-yellow-400 transition"
-                    [class.bg-yellow-500]="status.isRegularOnly"
-                    [class.bg-gradient-to-r]="status.isMixed"
-                    [class.from-yellow-500]="status.isMixed"
-                    [class.to-red-500]="status.isMixed"
-                    [class.bg-red-500]="status.isDivineOnly"
-                    [class.bg-gray-400]="!status.hasLogs"
-                  >
-                    <span
-                      class="text-black"
-                      [class.text-white]="status.hasDivine || !status.hasLogs"
-                      >✨</span
-                    >
-                  </button>
-                </div>
-              } @else if (card.type === 'MONSTER') {
-                <div
-                  class="bg-zinc-500 p-3 rounded-lg relative group transition border border-zinc-400"
-                >
-                  <span class="font-bold text-sm">Monstruo</span>
-                  <span class="block text-xs text-gray-300"
-                    >+{{ FAINT_MEMORY_CONTRIBUTION[card.type] }} FM</span
-                  >
-                  <div class="flex gap-2 mt-2">
-                    <button
-                      (click)="removeDeckCard(card.id)"
-                      class="flex-1 text-xs bg-red-800 hover:bg-red-700 rounded px-2 py-1"
-                    >
-                      Remover
-                    </button>
-                    <button
-                      (click)="duplicateCard(card.id)"
-                      class="flex-1 text-xs bg-purple-700 hover:bg-purple-600 rounded px-2 py-1"
-                    >
-                      Duplicar
-                    </button>
-                  </div>
-
-                  <button
-                    (click)="handleOpenEpiphanyModalForCard(card.id, 'MONSTER')"
-                    class="epiphany-button absolute top-1 right-1 p-1 rounded-full text-xs font-bold shadow-md bg-yellow-500 hover:bg-yellow-400 transition"
-                    [class.bg-yellow-500]="status.isRegularOnly"
-                    [class.bg-gradient-to-r]="status.isMixed"
-                    [class.from-yellow-500]="status.isMixed"
-                    [class.to-red-500]="status.isMixed"
-                    [class.bg-red-500]="status.isDivineOnly"
-                    [class.bg-gray-400]="!status.hasLogs"
-                  >
-                    <span
-                      class="text-black"
-                      [class.text-white]="status.hasDivine || !status.hasLogs"
-                      >✨</span
-                    >
-                  </button>
-                </div>
-              } @else if (card.type === 'BASIC') {
-                <div
-                  class="bg-yellow-600 p-3 rounded-lg relative group transition border border-yellow-400"
-                >
-                  <span class="font-bold text-sm">BÁSICA</span>
-                  <span class="block text-xs text-gray-900"
-                    >+{{ FAINT_MEMORY_CONTRIBUTION[card.type] }} FM</span
-                  >
-                  <button
-                    (click)="convertCard(index)"
-                    class="px-3 py-1 mt-2 w-full bg-green-700 hover:bg-green-600 rounded text-sm transition disabled:opacity-50 font-medium"
-                  >
-                    Convertir a neutral
-                  </button>
-
-                  <div class="flex gap-2 mt-2">
-                    <button
-                      (click)="removeDeckCard(card.id)"
-                      class="flex-1 text-xs bg-red-800 hover:bg-red-700 rounded px-2 py-1"
-                    >
-                      Remover
-                    </button>
-                    <button
-                      (click)="duplicateCard(card.id)"
-                      class="flex-1 text-xs bg-purple-700 hover:bg-purple-600 rounded px-2 py-1"
-                    >
-                      Duplicar
-                    </button>
-                  </div>
-                </div>
-              } @else if (card.type === 'UNIQUE') {
-                <div
-                  class="bg-blue-400 p-3 rounded-lg relative group transition border border-blue-300"
-                >
-                  <span class="font-bold text-sm">ÚNICA</span>
-                  <span class="block text-xs text-gray-900"
-                    >+{{ FAINT_MEMORY_CONTRIBUTION[card.type] }} FM</span
-                  >
-                  <div class="flex gap-2 mt-2">
-                    <button
-                      (click)="removeDeckCard(card.id)"
-                      class="flex-1 text-xs bg-red-800 hover:bg-red-700 rounded px-2 py-1"
-                    >
-                      Remover
-                    </button>
-                    <button
-                      (click)="duplicateCard(card.id)"
-                      class="flex-1 text-xs bg-purple-700 hover:bg-purple-600 rounded px-2 py-1"
-                    >
-                      Duplicar
-                    </button>
-                  </div>
-
-                  <button
-                    (click)="handleOpenEpiphanyModalForCard(card.id, 'UNIQUE')"
-                    class="epiphany-button absolute top-1 right-1 p-1 rounded-full text-xs font-bold shadow-md bg-yellow-500 hover:bg-yellow-400 transition"
-                    [class.bg-yellow-500]="status.isRegularOnly"
-                    [class.bg-gradient-to-r]="status.isMixed"
-                    [class.from-yellow-500]="status.isMixed"
-                    [class.to-red-500]="status.isMixed"
-                    [class.bg-red-500]="status.isDivineOnly"
-                    [class.bg-gray-400]="!status.hasLogs"
-                  >
-                    <span
-                      class="text-black"
-                      [class.text-white]="status.hasDivine || !status.hasLogs"
-                      >✨</span
-                    >
-                  </button>
-                </div>
-              }
-            }
-          </div>
-        }
-      </div>
-
-      <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-end justify-between">
         <button
           (click)="handleOpenAddCardModal()"
-          class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition font-medium shadow-md"
+          class="px-1.5 py-0.5 bg-indigo-600 hover:bg-indigo-700 rounded text-[10px] flex items-center gap-0.5 transition font-medium"
         >
-          ➕ Añadir Carta al Deck
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14"></path>
+            <path d="M12 5v14"></path>
+          </svg>
+          Carta
         </button>
       </div>
+
+      <!-- Empty State -->
+      @if (character().deck.length === 0) {
+        <button
+          (click)="addInitialCards()"
+          class="w-full py-1.5 bg-purple-700 hover:bg-purple-800 rounded text-[10px] transition font-medium"
+        >
+          + Añadir cartas iniciales
+        </button>
+      }
+
+      <!-- Cards Grid - 4 columns for more density -->
+      @if (character().deck.length > 0) {
+        <div class="grid grid-cols-4 gap-1 mb-1.5">
+          @for (card of character().deck; track card.id; let index = $index) {
+            @let status = getEpiphanyStatus(card);
+
+            <div
+              class="relative rounded p-1 shadow-sm group hover:shadow-md transition-all"
+              [class.bg-gradient-to-br]="true"
+              [class.from-amber-500]="card.type === 'BASIC'"
+              [class.to-amber-600]="card.type === 'BASIC'"
+              [class.from-cyan-500]="card.type === 'UNIQUE'"
+              [class.to-blue-600]="card.type === 'UNIQUE'"
+              [class.from-gray-400]="card.type === 'NEUTRAL'"
+              [class.to-gray-500]="card.type === 'NEUTRAL'"
+              [class.from-emerald-600]="card.type === 'MONSTER'"
+              [class.to-emerald-700]="card.type === 'MONSTER'"
+              [class.from-rose-600]="card.type === 'FORBIDDEN'"
+              [class.to-rose-700]="card.type === 'FORBIDDEN'"
+            >
+              <!-- Epiphany Indicator -->
+              @if (status.isMixed) {
+                <div
+                  class="absolute -top-1 -right-1 w-5 h-5 rounded-full border-2 border-slate-900 bg-linear-to-br from-yellow-400 to-fuchsia-500 flex items-center justify-center shadow-lg z-10"
+                  title="Epifanía Regular y Divina"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="text-white"
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                </div>
+              } @else if (status.isDivineOnly) {
+                <div
+                  class="absolute -top-1 -right-1 w-5 h-5 rounded-full border-2 border-slate-900 bg-fuchsia-500 flex items-center justify-center shadow-lg z-10"
+                  title="Epifanía Divina"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="text-white"
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                </div>
+              } @else if (status.isRegularOnly) {
+                <div
+                  class="absolute -top-1 -right-1 w-5 h-5 rounded-full border-2 border-slate-900 bg-yellow-400 flex items-center justify-center shadow-lg z-10"
+                  title="Epifanía Regular"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="text-slate-900"
+                  >
+                    <path
+                      d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"
+                    />
+                  </svg>
+                </div>
+              }
+
+              <!-- Card Type -->
+              <div class="mb-0.5 flex items-center gap-0.5">
+                @if (card.isDuplicate) {
+                  <div
+                    class="bg-slate-900 bg-opacity-90 px-1 py-0.5 rounded-sm text-[7px] font-bold text-emerald-400 border border-emerald-500 leading-none z-10"
+                  >
+                    DUP.
+                  </div>
+                }
+                <span class="text-[8px] font-bold text-white uppercase block leading-tight">{{
+                  card.type
+                }}</span>
+              </div>
+
+              <!-- Card Name Input -->
+              <input
+                type="text"
+                [ngModel]="card.name"
+                (ngModelChange)="updateCardName(card.id, $event)"
+                class="w-full bg-black bg-opacity-30 text-[7px] px-0.5 py-0.5 rounded mb-0.5 border border-transparent focus:border-white focus:outline-none text-white placeholder-gray-400"
+                placeholder="Nombre..."
+              />
+
+              <!-- Action Buttons -->
+              <div class="flex gap-0.5 mb-0.5">
+                <button
+                  (click)="removeDeckCard(card.id)"
+                  title="Remover"
+                  class="flex-1 bg-rose-700 bg-opacity-80 hover:bg-opacity-100 rounded px-0.5 py-0.5 transition flex items-center justify-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="8"
+                    height="8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  </svg>
+                </button>
+                <button
+                  (click)="duplicateCard(card.id)"
+                  title="Duplicar"
+                  class="flex-1 bg-purple-700 bg-opacity-80 hover:bg-opacity-100 rounded px-0.5 py-0.5 transition flex items-center justify-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="8"
+                    height="8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                  </svg>
+                </button>
+                <button
+                  (click)="
+                    handleOpenEpiphanyModalForCard(
+                      card.id,
+                      card.type === 'MONSTER'
+                        ? 'MONSTER'
+                        : card.type === 'UNIQUE'
+                          ? 'UNIQUE'
+                          : 'NEUTRAL_FORBIDDEN'
+                    )
+                  "
+                  title="Epifanía"
+                  class="flex-1 bg-yellow-500 bg-opacity-80 hover:bg-opacity-100 rounded px-0.5 py-0.5 transition flex items-center justify-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="8"
+                    height="8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="text-slate-900"
+                  >
+                    <path
+                      d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Convert Button for BASIC cards -->
+              @if (card.type === 'BASIC') {
+                <button
+                  (click)="convertCard(index)"
+                  class="w-full bg-emerald-600 hover:bg-emerald-700 rounded px-0.5 py-0.5 text-[7px] transition font-medium text-white"
+                >
+                  → Neutral
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
     </div>
 
-    <div class="md:col-span-1 bg-gray-900 rounded-lg p-4 border border-gray-700 space-y-4">
-      <h3 class="text-lg font-semibold mb-2 text-purple-300">Historial de FM (Solo Relevante)</h3>
-      <div class="max-h-80 overflow-y-auto pr-2">
+    <!-- History Section - Compact with Custom Scrollbar -->
+    <div class="bg-slate-800 rounded p-1.5 border border-slate-700">
+      <h3 class="text-[10px] font-semibold text-slate-400 mb-1 uppercase">Historial</h3>
+      <div class="space-y-0.5 max-h-28 overflow-y-auto pr-1 custom-scrollbar">
         @if (character().history.length === 0) {
-          <p class="text-gray-500 italic text-sm">El historial de puntuación se mostrará aquí.</p>
+          <p class="text-[9px] text-slate-500 italic">Sin historial</p>
         } @else {
           @for (entry of character().history.slice().reverse(); track $index) {
             <div
-              class="flex justify-between items-center py-2 border-b border-gray-800 last:border-b-0 text-sm"
+              class="flex justify-between items-center text-[9px] border-b border-slate-700 pb-0.5 last:border-0 gap-2"
             >
-              <span class="text-gray-400 font-light">{{ entry.description }}</span>
-              <div class="flex gap-4">
-                <span
-                  [class.text-green-400]="entry.points > 0"
-                  [class.text-red-400]="entry.points < 0"
-                  class="font-mono w-16 text-right font-semibold"
-                >
-                  {{ entry.points > 0 ? '+' : '' }}{{ entry.points }}
-                </span>
-              </div>
+              <span class="text-slate-400 truncate flex-1">{{ entry.description }}</span>
+              <span
+                class="font-mono font-semibold whitespace-nowrap"
+                [class.text-emerald-400]="entry.points > 0"
+                [class.text-rose-400]="entry.points < 0"
+                [class.text-slate-400]="entry.points === 0"
+              >
+                {{ entry.points > 0 ? '+' : '' }}{{ entry.points }}
+              </span>
             </div>
           }
         }
       </div>
     </div>
-  </div>
-
-  <div class="pt-4 flex flex-col items-end gap-y-2 xl:flex-row xl:justify-end xl:gap-x-4">
-    <button
-      (click)="removeCharacter()"
-      class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition font-medium"
-    >
-      🗑️ Eliminar Personaje
-    </button>
   </div>
 </div>

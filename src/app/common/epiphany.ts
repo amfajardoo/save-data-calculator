@@ -45,7 +45,7 @@ export type EpiphanyModalData = {
           </label>
         </div>
 
-        <div class="mt-6 flex justify-end gap-3">
+        <div class="mt-6 flex justify-center gap-3">
           <button
             type="button"
             (click)="close()"
@@ -64,25 +64,28 @@ export type EpiphanyModalData = {
       </form>
 
       @if (currentCard()) {
-      <div class="mt-4 pt-4 border-t border-gray-700">
-        <h4 class="text-sm font-semibold mb-2 text-red-400">Quitar Epifanías de esta carta</h4>
-        <div class="flex flex-wrap gap-2">
-          @for (log of currentCard()!.epiphanyLogs; track $index) {
-          <div
-            class="flex items-center rounded-full px-3 py-1 text-xs shadow-md"
-            [class.bg-yellow-800]="log.type === 'REGULAR'"
-            [class.bg-red-800]="log.type === 'DIVINE'"
-          >
-            <span class="font-medium mr-1 text-white">
-              {{ log.type === 'REGULAR' ? '✨ Regular' : '👑 Divina' }}
-            </span>
-            <button (click)="removeEpiphany($index)" class="ml-2 text-red-300 hover:text-red-100">
-              ×
-            </button>
+        <div class="mt-4 pt-4 border-t border-gray-700">
+          <h4 class="text-sm font-semibold mb-2 text-red-400">Quitar Epifanías de esta carta</h4>
+          <div class="flex flex-wrap gap-2">
+            @for (log of currentCard()!.epiphanyLogs; track $index) {
+              <div
+                class="flex items-center rounded-full px-3 py-1 text-xs shadow-md"
+                [class.bg-yellow-800]="log.type === 'REGULAR'"
+                [class.bg-red-800]="log.type === 'DIVINE'"
+              >
+                <span class="font-medium mr-1 text-white">
+                  {{ log.type === 'REGULAR' ? '✨ Regular' : '👑 Divina' }}
+                </span>
+                <button
+                  (click)="removeEpiphany($index)"
+                  class="ml-2 text-red-300 hover:text-red-100"
+                >
+                  ×
+                </button>
+              </div>
+            }
           </div>
-          }
         </div>
-      </div>
       }
     </div>
   `,
@@ -110,8 +113,8 @@ export class EpiphanyModal {
     return target === 'MONSTER'
       ? 'Monstruo 🐉'
       : target === 'NEUTRAL_FORBIDDEN'
-      ? 'Neutral/Prohibida 🎴'
-      : 'Error de Objetivo';
+        ? 'Neutral/Prohibida 🎴'
+        : 'Error de Objetivo';
   });
 
   /**
@@ -125,7 +128,7 @@ export class EpiphanyModal {
       this.modalData.characterId,
       this.modalData.cardId,
       this.selectedType,
-      this.modalData.target
+      this.modalData.target,
     );
     // No cerramos el modal para permitir múltiples adiciones o correcciones.
   }

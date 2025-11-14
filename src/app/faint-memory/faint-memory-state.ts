@@ -14,7 +14,7 @@ import {
   EpiphanyTargetCard,
 } from '../save-data/models';
 
-// --- UTILITIES ---
+type CreateCardOptions = Partial<Omit<CardInstance, 'id' | 'type' | 'name'>>;
 let cardIdCounter = 0;
 const generateCardId = (type: CardType): string => {
   cardIdCounter++;
@@ -23,55 +23,27 @@ const generateCardId = (type: CardType): string => {
   return `${idType}_${cardIdCounter}`;
 };
 
-const INITIAL_CARDS: CardInstance[] = [
-  {
-    epiphanyLogs: [],
-    id: generateCardId('BASIC'),
-    type: 'BASIC',
-    isConvertion: false,
-  },
-  {
-    epiphanyLogs: [],
-    id: generateCardId('BASIC'),
-    type: 'BASIC',
-    isConvertion: false,
-  },
-  {
-    epiphanyLogs: [],
-    id: generateCardId('BASIC'),
-    type: 'BASIC',
-    isConvertion: false,
-  },
-  {
-    epiphanyLogs: [],
-    id: generateCardId('BASIC'),
-    type: 'BASIC',
-    isConvertion: false,
-  },
-  {
-    epiphanyLogs: [],
-    id: generateCardId('UNIQUE'),
-    type: 'UNIQUE',
-    isConvertion: false,
-  },
-  {
-    epiphanyLogs: [],
-    id: generateCardId('UNIQUE'),
-    type: 'UNIQUE',
-    isConvertion: false,
-  },
-  {
-    epiphanyLogs: [],
-    id: generateCardId('UNIQUE'),
-    type: 'UNIQUE',
-    isConvertion: false,
-  },
-  {
-    epiphanyLogs: [],
-    id: generateCardId('UNIQUE'),
-    type: 'UNIQUE',
-    isConvertion: false,
-  },
+const createCard = (
+  type: CardType,
+  name: string,
+  options: CreateCardOptions = {},
+): CardInstance => ({
+  type,
+  name,
+  id: generateCardId(type),
+  epiphanyLogs: [],
+  isConvertion: false,
+  isDuplicate: false,
+  ...options,
+});
+
+const createCardsBatch = (count: number, type: CardType, baseName: string): CardInstance[] => {
+  return Array.from({ length: count }, (_, i) => createCard(type, `${baseName} ${i + 1}`));
+};
+
+const INITIAL_CARDS_BATCH: CardInstance[] = [
+  ...createCardsBatch(4, 'BASIC', 'Básica'),
+  ...createCardsBatch(4, 'UNIQUE', 'Única'),
 ];
 
 const INITIAL_CHARACTER_STATE: CharacterState = {
@@ -185,16 +157,27 @@ export class FaintMemoryState {
     );
   }
 
+  updateCardName(charId: number, cardId: string, name: string): void {
+    this.characters.update((chars) =>
+      chars.map((char) => {
+        if (char.id === charId) {
+          const updatedChar: CharacterState = structuredClone(char);
+          const card = updatedChar.deck.find((c) => c.id === cardId);
+          if (card) {
+            card.name = name;
+          }
+          return updatedChar;
+        }
+        return char;
+      }),
+    );
+  }
+
   addDeckCard(id: number, cardType: CardType): void {
     this.characters.update((chars) =>
       chars.map((char) => {
         if (char.id === id) {
-          const newCard: CardInstance = {
-            id: generateCardId(cardType),
-            type: cardType,
-            epiphanyLogs: [],
-            isConvertion: false,
-          };
+          const newCard: CardInstance = createCard(cardType, `${cardType}`);
           const updatedChar: CharacterState = structuredClone(char);
 
           updatedChar.deck.push(newCard);
@@ -212,7 +195,7 @@ export class FaintMemoryState {
         if (char.id === id) {
           return {
             ...char,
-            deck: [...char.deck, ...INITIAL_CARDS],
+            deck: [...char.deck, ...INITIAL_CARDS_BATCH],
           };
         }
         return char;
@@ -252,13 +235,13 @@ export class FaintMemoryState {
           if (char.id === id) {
             const updatedChar: CharacterState = structuredClone(char);
 
-            const cardToDuplicate = updatedChar.deck.find((card) => card.id === cardId);
+            const originalCard = updatedChar.deck.find((card) => card.id === cardId);
 
-            if (cardToDuplicate) {
-              const newCard: CardInstance = {
-                ...cardToDuplicate,
-                id: generateCardId(cardToDuplicate.type),
-              };
+            if (originalCard) {
+              const newCard: CardInstance = createCard(originalCard.type, originalCard.name, {
+                isDuplicate: true,
+                epiphanyLogs: originalCard.epiphanyLogs,
+              });
               updatedChar.deck.push(newCard);
 
               updatedChar.actionLogs.duplications += 1;
@@ -286,12 +269,9 @@ export class FaintMemoryState {
             ...updatedChar,
             deck: updatedChar.deck.map((card, index) => {
               if (index === cardIndex) {
-                const neutralCardInstance: CardInstance = {
-                  epiphanyLogs: [],
-                  id: generateCardId('NEUTRAL'),
-                  type: 'NEUTRAL',
+                const neutralCardInstance: CardInstance = createCard('NEUTRAL', `NEUTRAL`, {
                   isConvertion: true,
-                };
+                });
 
                 return neutralCardInstance;
               }
@@ -394,7 +374,6 @@ export class FaintMemoryState {
   ): { score: number; history: HistoryEntry[] } {
     let currentScore = 0;
     const history: HistoryEntry[] = [];
-    debugger;
     const addHistory = (type: HistoryEntry['type'], description: string, points: number) => {
       currentScore += points;
       history.push({

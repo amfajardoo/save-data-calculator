@@ -4,3 +4,60 @@
 .btn-action {
   @apply px-3 py-1 text-xs font-semibold rounded-md text-gray-900 shadow-md hover:opacity-90 transition duration-150;
 }
+
+/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+
+/* Global scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(15 23 42); /* slate-950 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(51 65 85); /* slate-700 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(71 85 105); /* slate-600 */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(51 65 85) rgb(15 23 42);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.btn-action {
+  @apply px-3 py-1 text-xs font-semibold rounded-md text-gray-900 shadow-md hover:opacity-90 transition duration-150;
+}
+
+/* Custom scrollbar class for internal components */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgb(30 41 59);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(71 85 105);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgb(100 116 139);
+}

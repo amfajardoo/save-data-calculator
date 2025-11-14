@@ -36,8 +36,11 @@ export class CharacterDataComponent {
   // --- HANDLERS DE MUTACIÓN DEL ESTADO (Usan el servicio directamente) ---
 
   protected updateCharacter(key: keyof CalculatedCharacterState, value: any): void {
-    // La conversión a `keyof CharacterState` es segura porque `CalculatedCharacterState`
-    // extiende `CharacterState` y estos son campos mutables.
+    this.stateService.updateCharacter(this.character().id, key as any, value);
+  }
+
+  protected updateCardName(cardId: string, name: string): void {
+    this.stateService.updateCardName(this.character().id, cardId, name);
   }
 
   protected removeCharacter(): void {
