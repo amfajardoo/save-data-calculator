@@ -64,10 +64,9 @@ export class FaintMemoryState {
 
   readonly totalCap = computed(() => {
     const global = this.globalState();
-    const currentTierData =
-      TIERS_SAVE_DATA.find((t) => t.tier === global.tier) || TIERS_SAVE_DATA[0];
+    const currentTierCap = TIERS_SAVE_DATA(global.tier);
 
-    let cap = currentTierData.points;
+    let cap = currentTierCap;
     if (global.isNightmare) {
       cap += ACTION_COSTS.NIGHTMARE_CAP_BONUS;
     }
@@ -337,11 +336,11 @@ export class FaintMemoryState {
 
     let deckContribution = 0;
     let divineEpiphaniesCount = 0;
-    const appliedRegularEpiphanies: Record<EpiphanyTargetCard, boolean> = {
-      NEUTRAL_FORBIDDEN: false,
-      MONSTER: false,
-      BASIC: false,
-      UNIQUE: false,
+    const regularEpiphaniesCount: Record<EpiphanyTargetCard, number> = {
+      NEUTRAL_FORBIDDEN: 0,
+      MONSTER: 0,
+      BASIC: 0,
+      UNIQUE: 0,
     };
 
     for (const card of character.deck) {
@@ -353,9 +352,9 @@ export class FaintMemoryState {
           divineEpiphaniesCount++;
         } else if (log.type === 'REGULAR') {
           if (card.type === 'NEUTRAL' || card.type === 'FORBIDDEN') {
-            appliedRegularEpiphanies['NEUTRAL_FORBIDDEN'] = true;
+            regularEpiphaniesCount['NEUTRAL_FORBIDDEN']++;
           } else if (card.type === 'MONSTER') {
-            appliedRegularEpiphanies['MONSTER'] = true;
+            regularEpiphaniesCount['MONSTER']++;
           }
         }
       }
@@ -374,15 +373,22 @@ export class FaintMemoryState {
       addHistory('ACTION', `Bono: Epifanías Divinas (${divineEpiphaniesCount}x)`, divineBonus);
     }
 
-    if (appliedRegularEpiphanies['NEUTRAL_FORBIDDEN']) {
+    if (regularEpiphaniesCount['NEUTRAL_FORBIDDEN'] > 0) {
+      const regularBonus =
+        regularEpiphaniesCount['NEUTRAL_FORBIDDEN'] * EPIPHANY_MODIFIERS.REGULAR_BONUS;
       addHistory(
         'ACTION',
-        'Bono: Epifanía Regular (Neutral/Prohibida)',
-        EPIPHANY_MODIFIERS.REGULAR_BONUS
+        `Bono: Epifanía Regular (Neutral/Prohibida) (${regularEpiphaniesCount['NEUTRAL_FORBIDDEN']}x)`,
+        regularBonus
       );
     }
-    if (appliedRegularEpiphanies['MONSTER']) {
-      addHistory('ACTION', 'Bono: Epifanía Regular (Monstruo)', EPIPHANY_MODIFIERS.REGULAR_BONUS);
+    if (regularEpiphaniesCount['MONSTER'] > 0) {
+      const regularBonus = regularEpiphaniesCount['MONSTER'] * EPIPHANY_MODIFIERS.REGULAR_BONUS;
+      addHistory(
+        'ACTION',
+        `Bono: Epifanía Regular (Monstruo) (${regularEpiphaniesCount['MONSTER']}x)`,
+        regularBonus
+      );
     }
 
     // ------------------------------------------------------------------
@@ -458,10 +464,9 @@ export class FaintMemoryState {
     // D. CÁLCULO Y APLICACIÓN DEL LÍMITE (CAP) GLOBAL
     // ------------------------------------------------------------------
 
-    const currentTierData =
-      TIERS_SAVE_DATA.find((t) => t.tier === globalState.tier) || TIERS_SAVE_DATA[0];
+    const currentTierCap = TIERS_SAVE_DATA(globalState.tier);
 
-    let totalCap = currentTierData.points;
+    let totalCap = currentTierCap;
 
     if (globalState.isNightmare) {
       totalCap += ACTION_COSTS.NIGHTMARE_CAP_BONUS;

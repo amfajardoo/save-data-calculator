@@ -10,15 +10,10 @@ export interface TIER_SAVE_DATA {
 }
 
 const TIER_BASE_VALUE = 30;
-const NUMBER_OF_TIERS = 13;
-const tierNumbers = Array.from({ length: NUMBER_OF_TIERS }, (_, i) => i + 1);
 
 // Datos de Tiers (se calcula el 'points' directamente)
-export const TIERS_SAVE_DATA: TIER_SAVE_DATA[] = tierNumbers.map((t, index) => ({
-  name: `TIER ${t}`,
-  tier: t,
-  points: 10 * index + TIER_BASE_VALUE,
-}));
+export const TIERS_SAVE_DATA: (tier: number) => number = (tier: number) =>
+  tier < 1 ? 30 : 10 * (tier - 1) + TIER_BASE_VALUE;
 
 // ----------------------------------------------------
 // 2. CONTRIBUCIÓN DE PUNTOS AL FAINT MEMORY (Inventario Final)
