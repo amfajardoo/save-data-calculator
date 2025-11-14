@@ -19,24 +19,40 @@ export type AddCardModalData = { characterId: number };
       <div class="grid grid-cols-2 gap-3">
         <button
           (click)="addCard('NEUTRAL')"
-          class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-700 hover:bg-gray-600 transition shadow-lg border border-gray-600"
+          class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-400 hover:bg-gray-600 transition shadow-lg border border-white"
         >
           <span class="text-3xl">🎴</span>
           <div class="font-bold text-sm mt-1">Neutral / Prohibida</div>
-          <div class="text-xs text-gray-400 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.NEUTRAL }} FM</div>
+          <div class="text-xs text-gray-900 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.NEUTRAL }} FM</div>
         </button>
         <button
           (click)="addCard('MONSTER')"
-          class="flex flex-col items-center justify-center p-4 rounded-lg bg-red-900 hover:bg-red-800 transition shadow-lg border border-red-700"
+          class="flex flex-col items-center justify-center p-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 transition shadow-lg border border-white"
         >
           <span class="text-3xl">🐉</span>
           <div class="font-bold text-sm mt-1">Monstruo</div>
-          <div class="text-xs text-gray-300 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.MONSTER }} FM</div>
+          <div class="text-xs text-gray-900 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.MONSTER }} FM</div>
+        </button>
+        <button
+          (click)="addCard('BASIC')"
+          class="flex flex-col items-center justify-center p-4 rounded-lg bg-yellow-600 hover:bg-yellow-700 transition shadow-lg border border-white"
+        >
+          <span class="text-3xl">⬜</span>
+          <div class="font-bold text-sm mt-1">BÁSICA</div>
+          <div class="text-xs text-gray-900 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.BASIC }} FM</div>
+        </button>
+        <button
+          (click)="addCard('UNIQUE')"
+          class="flex flex-col items-center justify-center p-4 rounded-lg bg-blue-400 hover:bg-blue-500 transition shadow-lg border border-white"
+        >
+          <span class="text-3xl">⭐</span>
+          <div class="font-bold text-sm mt-1">ÚNICA</div>
+          <div class="text-xs text-gray-900 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.UNIQUE }} FM</div>
         </button>
       </div>
       <button
         (click)="close()"
-        class="mt-6 w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition font-medium"
+        class="mt-6 w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 rounded-lg transition font-medium"
       >
         Cancelar
       </button>
@@ -53,11 +69,10 @@ export class AddCardModal {
 
   protected readonly FAINT_MEMORY_CONTRIBUTION = FAINT_MEMORY_CONTRIBUTION;
 
-  addCard(cardType: 'NEUTRAL' | 'MONSTER'): void {
+  addCard(cardType: CardType): void {
     // La lógica de mutación se llama a través del StateService
     // El CardType para Neutral aplica también a Forbidden para el cálculo de FM.
-    const type: CardType = cardType === 'NEUTRAL' ? 'NEUTRAL' : 'MONSTER';
-    this.stateService.addDeckCard(this.characterId, type);
+    this.stateService.addDeckCard(this.characterId, cardType);
     this.dialogRef.close(true); // Cerrar y retornar true
   }
 

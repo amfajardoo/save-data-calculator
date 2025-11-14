@@ -51,7 +51,7 @@ export type EpiphanyModalData = {
             (click)="close()"
             class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition font-medium"
           >
-            Cancelar
+            Cerrar
           </button>
           <button
             type="submit"

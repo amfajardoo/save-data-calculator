@@ -29,6 +29,10 @@ export class CharacterDataComponent {
   protected readonly FAINT_MEMORY_CONTRIBUTION = FAINT_MEMORY_CONTRIBUTION;
   protected readonly ACTION_COSTS = ACTION_COSTS;
 
+  addInitialCards() {
+    this.stateService.addInitialCards(this.character().id);
+  }
+
   // --- HANDLERS DE MUTACIÓN DEL ESTADO (Usan el servicio directamente) ---
 
   protected updateCharacter(key: keyof CalculatedCharacterState, value: any): void {

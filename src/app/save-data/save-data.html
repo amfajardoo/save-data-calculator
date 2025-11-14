@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gray-900 text-gray-100 p-6 md:p-10 font-sans space-y-10">
+<div class="min-h-screen bg-gray-900 text-gray-100 p-6 md:p-10 font-sans">
   <app-global-config
     [globalState]="globalState()"
     [totalCap]="totalCap()"
@@ -6,21 +6,21 @@
     [updateNightmare]="updateGlobalNightmare"
   ></app-global-config>
 
-  <div class="space-y-10">
-    @for (char of calculatedCharacters(); track char.id) {
+  @for (char of calculatedCharacters(); track char.id) {
     <app-character-data
       [character]="char"
       [totalCap]="totalCap()"
       [openAddCardModal]="openAddCardModal.bind(this, char.id)"
       [openEpiphanyModal]="openEpiphanyModal.bind(this, char.id)"
     ></app-character-data>
-    }
+  }
 
+  @if (calculatedCharacters().length < 3) {
     <button
       (click)="addCharacter()"
-      class="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl text-lg font-semibold border-2 border-dashed border-gray-600 transition"
+      class="w-full px-6 py-3 mt-4 bg-gray-700 hover:bg-gray-600 rounded-xl text-lg font-semibold border-2 border-dashed border-gray-600 transition"
     >
       + Añadir Nuevo Personaje
     </button>
-  </div>
+  }
 </div>

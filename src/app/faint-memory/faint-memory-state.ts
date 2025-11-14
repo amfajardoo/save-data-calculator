@@ -23,6 +23,49 @@ const generateCardId = (type: CardType): string => {
   return `${idType}_${cardIdCounter}`;
 };
 
+const INITIAL_CARDS: CardInstance[] = [
+  {
+    epiphanyLogs: [],
+    id: generateCardId('BASIC'),
+    type: 'BASIC',
+  },
+  {
+    epiphanyLogs: [],
+    id: generateCardId('BASIC'),
+    type: 'BASIC',
+  },
+  {
+    epiphanyLogs: [],
+    id: generateCardId('BASIC'),
+    type: 'BASIC',
+  },
+  {
+    epiphanyLogs: [],
+    id: generateCardId('BASIC'),
+    type: 'BASIC',
+  },
+  {
+    epiphanyLogs: [],
+    id: generateCardId('UNIQUE'),
+    type: 'UNIQUE',
+  },
+  {
+    epiphanyLogs: [],
+    id: generateCardId('UNIQUE'),
+    type: 'UNIQUE',
+  },
+  {
+    epiphanyLogs: [],
+    id: generateCardId('UNIQUE'),
+    type: 'UNIQUE',
+  },
+  {
+    epiphanyLogs: [],
+    id: generateCardId('UNIQUE'),
+    type: 'UNIQUE',
+  },
+];
+
 const INITIAL_CHARACTER_STATE: CharacterState = {
   id: 1,
   name: 'Nuevo Personaje',
@@ -131,17 +174,10 @@ export class FaintMemoryState {
           return updatedChar;
         }
         return char;
-      })
+      }),
     );
   }
 
-  // --- Deck Mutation ---
-
-  /**
-   * Añade una nueva carta al deck del personaje.
-   * @param id ID del personaje.
-   * @param cardType Tipo de la carta a añadir.
-   */
   addDeckCard(id: number, cardType: CardType): void {
     this.characters.update((chars) =>
       chars.map((char) => {
@@ -158,8 +194,22 @@ export class FaintMemoryState {
           return updatedChar;
         }
         return char;
-      })
+      }),
     );
+  }
+
+  addInitialCards(id: number): void {
+    this.characters.update((chars) => {
+      return chars.map((char) => {
+        if (char.id === id) {
+          return {
+            ...char,
+            deck: [...char.deck, ...INITIAL_CARDS],
+          };
+        }
+        return char;
+      });
+    });
   }
 
   removeDeckCard(id: number, cardId: string): void {
@@ -171,6 +221,11 @@ export class FaintMemoryState {
           const cardIndex = updatedChar.deck.findIndex((card) => card.id === cardId);
 
           if (cardIndex !== -1) {
+            const cardToRemove = updatedChar.deck[cardIndex];
+            if (cardToRemove.type === 'BASIC' || cardToRemove.type === 'UNIQUE') {
+              updatedChar.actionLogs.characterCardRemovals += 1;
+            }
+
             updatedChar.deck.splice(cardIndex, 1);
             updatedChar.actionLogs.removals += 1;
           }
@@ -178,7 +233,7 @@ export class FaintMemoryState {
           return updatedChar;
         }
         return char;
-      })
+      }),
     );
   }
 
@@ -205,7 +260,7 @@ export class FaintMemoryState {
           }
 
           return char;
-        }) as CharacterState[]
+        }) as CharacterState[],
     );
   }
 
@@ -230,7 +285,7 @@ export class FaintMemoryState {
           return updatedChar;
         }
         return char;
-      })
+      }),
     );
   }
 
@@ -241,7 +296,7 @@ export class FaintMemoryState {
     charId: number,
     cardId: string,
     type: 'REGULAR' | 'DIVINE',
-    targetCard: EpiphanyTargetCard
+    targetCard: EpiphanyTargetCard,
   ): void {
     this.characters.update((chars) =>
       chars.map((char) => {
@@ -254,7 +309,7 @@ export class FaintMemoryState {
             const currentLogs = [...cardToUpdate.epiphanyLogs];
 
             const exists = currentLogs.some(
-              (log) => log.type === type && log.targetCard === targetCard
+              (log) => log.type === type && log.targetCard === targetCard,
             );
 
             if (!exists) {
@@ -265,7 +320,7 @@ export class FaintMemoryState {
           return updatedChar;
         }
         return char;
-      })
+      }),
     );
   }
 
@@ -287,7 +342,7 @@ export class FaintMemoryState {
           return updatedChar;
         }
         return char;
-      })
+      }),
     );
   }
 
@@ -315,7 +370,7 @@ export class FaintMemoryState {
 
   private calculateFaintMemory(
     character: CharacterState,
-    globalState: GlobalRunState
+    globalState: GlobalRunState,
   ): { score: number; history: HistoryEntry[] } {
     let currentScore = 0;
     const history: HistoryEntry[] = [];
@@ -370,7 +425,7 @@ export class FaintMemoryState {
 
     if (divineEpiphaniesCount > 0) {
       const divineBonus = divineEpiphaniesCount * EPIPHANY_MODIFIERS.DIVINE_BONUS;
-      addHistory('ACTION', `Bono: Epifanías Divinas (${divineEpiphaniesCount}x)`, divineBonus);
+      addHistory('ACTION', `Epifanías Divinas (${divineEpiphaniesCount}x)`, divineBonus);
     }
 
     if (regularEpiphaniesCount['NEUTRAL_FORBIDDEN'] > 0) {
@@ -378,16 +433,16 @@ export class FaintMemoryState {
         regularEpiphaniesCount['NEUTRAL_FORBIDDEN'] * EPIPHANY_MODIFIERS.REGULAR_BONUS;
       addHistory(
         'ACTION',
-        `Bono: Epifanía Regular (Neutral/Prohibida) (${regularEpiphaniesCount['NEUTRAL_FORBIDDEN']}x)`,
-        regularBonus
+        `Epifanía Regular (Neutral/Prohibida) (${regularEpiphaniesCount['NEUTRAL_FORBIDDEN']}x)`,
+        regularBonus,
       );
     }
     if (regularEpiphaniesCount['MONSTER'] > 0) {
       const regularBonus = regularEpiphaniesCount['MONSTER'] * EPIPHANY_MODIFIERS.REGULAR_BONUS;
       addHistory(
         'ACTION',
-        `Bono: Epifanía Regular (Monstruo) (${regularEpiphaniesCount['MONSTER']}x)`,
-        regularBonus
+        `Epifanía Regular (Monstruo) (${regularEpiphaniesCount['MONSTER']}x)`,
+        regularBonus,
       );
     }
 
@@ -399,7 +454,7 @@ export class FaintMemoryState {
 
     const getProgressionCost = (
       count: number,
-      progressionMap: typeof ACTION_COSTS.REMOVE_CARDS_PROGRESSION
+      progressionMap: typeof ACTION_COSTS.REMOVE_CARDS_PROGRESSION,
     ): number => {
       // El índice se basa en la cuenta (1-indexed)
       const index = Math.min(count, actionKeys.length);
@@ -410,11 +465,11 @@ export class FaintMemoryState {
     // 1. Removals Cost (Costo Progresivo)
     const removalCost = getProgressionCost(
       character.actionLogs.removals,
-      ACTION_COSTS.REMOVE_CARDS_PROGRESSION
+      ACTION_COSTS.REMOVE_CARDS_PROGRESSION,
     );
 
     if (character.actionLogs.removals > 0) {
-      addHistory('ACTION', `Costo: Eliminación (${character.actionLogs.removals}x)`, -removalCost);
+      addHistory('ACTION', `Eliminación (${character.actionLogs.removals}x)`, -removalCost);
     }
 
     // 2. Character Card Removals Bonus
@@ -423,31 +478,23 @@ export class FaintMemoryState {
         character.actionLogs.characterCardRemovals * ACTION_COSTS.REMOVE_CHARACTER_CARD_BONUS;
       addHistory(
         'ACTION',
-        `Bono: Eliminación de Carta de Personaje (${character.actionLogs.characterCardRemovals}x)`,
-        charRemovalBonus
+        `Eliminación de Carta de Personaje (${character.actionLogs.characterCardRemovals}x)`,
+        charRemovalBonus,
       );
     }
 
     // 3. Duplication Cost
     const duplicationCost = getProgressionCost(
       character.actionLogs.duplications,
-      ACTION_COSTS.DUPLICATE_CARDS_PROGRESSION
+      ACTION_COSTS.DUPLICATE_CARDS_PROGRESSION,
     );
     if (character.actionLogs.duplications > 0) {
-      addHistory(
-        'ACTION',
-        `Costo: Duplicación (${character.actionLogs.duplications}x)`,
-        -duplicationCost
-      );
+      addHistory('ACTION', `Duplicación (${character.actionLogs.duplications}x)`, -duplicationCost);
     }
 
     // 4. Additional Duplication Cost (Manual Input) - COSTO
     if (character.additionalDuplicationCost > 0) {
-      addHistory(
-        'ACTION',
-        `Costo Adicional: Duplicación (Manual)`,
-        -Math.abs(character.additionalDuplicationCost)
-      );
+      addHistory('ACTION', `Duplicación`, -Math.abs(character.additionalDuplicationCost));
     }
 
     // 5. Conversion Bonus - BONO
@@ -455,8 +502,8 @@ export class FaintMemoryState {
       const conversionTotalBonus = character.actionLogs.convertions * ACTION_COSTS.CONVERT_CARD;
       addHistory(
         'ACTION',
-        `Puntos: Conversión (${character.actionLogs.convertions}x)`,
-        conversionTotalBonus
+        `Conversión (${character.actionLogs.convertions}x)`,
+        conversionTotalBonus,
       );
     }
 
@@ -484,7 +531,7 @@ export class FaintMemoryState {
 
     // Filtra las entradas con 0 puntos, excepto si son el log de límite aplicado
     const filteredHistory = history.filter(
-      (entry) => entry.points !== 0 || entry.description.includes('❌ Límite (CAP) aplicado')
+      (entry) => entry.points !== 0 || entry.description.includes('❌ Límite (CAP) aplicado'),
     );
 
     return { score: finalScore, history: filteredHistory };
