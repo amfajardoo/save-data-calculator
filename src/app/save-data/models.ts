@@ -17,6 +17,7 @@ export interface CardInstance {
   id: string;
   type: CardType;
   epiphanyLogs: EpiphanyLog[];
+  isConvertion: boolean;
 }
 
 export type CharacterDeck = CardInstance[];

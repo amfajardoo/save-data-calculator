@@ -24,10 +24,15 @@
         </h3>
 
         @if (character().deck.length === 0) {
-          <p class="text-gray-500 italic">No hay cartas en el deck.</p>
+          <button
+            (click)="addInitialCards()"
+            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition font-medium"
+          >
+            ➕ Añadir todas las cartas iniciales
+          </button>
         } @else {
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            @for (card of character().deck; track card.id) {
+            @for (card of character().deck; track card.id; let index = $index) {
               @let status = getEpiphanyStatus(card);
 
               @if (card.type === 'FORBIDDEN' || card.type === 'NEUTRAL') {
@@ -124,6 +129,13 @@
                   <span class="block text-xs text-gray-900"
                     >+{{ FAINT_MEMORY_CONTRIBUTION[card.type] }} FM</span
                   >
+                  <button
+                    (click)="convertCard(index)"
+                    class="px-3 py-1 mt-2 w-full bg-green-700 hover:bg-green-600 rounded text-sm transition disabled:opacity-50 font-medium"
+                  >
+                    Convertir a neutral
+                  </button>
+
                   <div class="flex gap-2 mt-2">
                     <button
                       (click)="removeDeckCard(card.id)"
@@ -192,26 +204,6 @@
         >
           ➕ Añadir Carta al Deck
         </button>
-
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-          <span class="text-sm text-gray-400">Cartas de Conversión:</span>
-          <input
-            type="number"
-            [ngModel]="character().additionalDuplicationCost"
-            (ngModelChange)="updateCharacter('additionalDuplicationCost', $event)"
-            placeholder="Qty"
-            min="0"
-            class="w-16 px-3 py-1 bg-gray-700 border border-gray-600 rounded text-sm text-center focus:border-green-500 outline-none"
-          />
-          <button
-            (click)="convertCard()"
-            [disabled]="character().additionalDuplicationCost <= 0"
-            class="px-3 py-1 bg-green-700 hover:bg-green-600 rounded text-sm transition disabled:opacity-50 font-medium"
-          >
-            Convertir (+{{ character().additionalDuplicationCost * ACTION_COSTS.CONVERT_CARD }}
-            FM)
-          </button>
-        </div>
       </div>
     </div>
 
@@ -243,12 +235,6 @@
   </div>
 
   <div class="pt-4 flex flex-col items-end gap-y-2 xl:flex-row xl:justify-end xl:gap-x-4">
-    <button
-      (click)="addInitialCards()"
-      class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition font-medium"
-    >
-      ➕ Añadir todas las cartas iniciales
-    </button>
     <button
       (click)="removeCharacter()"
       class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition font-medium"

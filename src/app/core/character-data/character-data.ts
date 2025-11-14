@@ -38,7 +38,6 @@ export class CharacterDataComponent {
   protected updateCharacter(key: keyof CalculatedCharacterState, value: any): void {
     // La conversión a `keyof CharacterState` es segura porque `CalculatedCharacterState`
     // extiende `CharacterState` y estos son campos mutables.
-    this.stateService.updateCharacter(this.character().id, key as any, value);
   }
 
   protected removeCharacter(): void {
@@ -53,9 +52,8 @@ export class CharacterDataComponent {
     this.stateService.duplicateCard(this.character().id, cardId);
   }
 
-  protected convertCard(): void {
-    // La lógica de conversión está encapsulada en el servicio
-    this.stateService.convertCard(this.character().id);
+  protected convertCard(index: number): void {
+    this.stateService.convertCard(this.character().id, index);
   }
 
   // --- HANDLERS DE APERTURA DE MODAL (Usan los callbacks inyectados) ---

@@ -28,41 +28,49 @@ const INITIAL_CARDS: CardInstance[] = [
     epiphanyLogs: [],
     id: generateCardId('BASIC'),
     type: 'BASIC',
+    isConvertion: false,
   },
   {
     epiphanyLogs: [],
     id: generateCardId('BASIC'),
     type: 'BASIC',
+    isConvertion: false,
   },
   {
     epiphanyLogs: [],
     id: generateCardId('BASIC'),
     type: 'BASIC',
+    isConvertion: false,
   },
   {
     epiphanyLogs: [],
     id: generateCardId('BASIC'),
     type: 'BASIC',
+    isConvertion: false,
   },
   {
     epiphanyLogs: [],
     id: generateCardId('UNIQUE'),
     type: 'UNIQUE',
+    isConvertion: false,
   },
   {
     epiphanyLogs: [],
     id: generateCardId('UNIQUE'),
     type: 'UNIQUE',
+    isConvertion: false,
   },
   {
     epiphanyLogs: [],
     id: generateCardId('UNIQUE'),
     type: 'UNIQUE',
+    isConvertion: false,
   },
   {
     epiphanyLogs: [],
     id: generateCardId('UNIQUE'),
     type: 'UNIQUE',
+    isConvertion: false,
   },
 ];
 
@@ -91,7 +99,7 @@ export class FaintMemoryState {
   // --- STATE SIGNALS ---
   // El estado de los modales (showModal) fue eliminado.
   protected readonly globalState = signal<GlobalRunState>({
-    tier: 1,
+    tier: 5,
     isNightmare: false,
   });
 
@@ -121,7 +129,7 @@ export class FaintMemoryState {
     const global = this.globalState();
     return this.characters().map((char) => {
       // Clonar para asegurar que el cálculo sea puro
-      const charClone = JSON.parse(JSON.stringify(char));
+      const charClone = structuredClone(char);
       const { score, history } = this.calculateFaintMemory(charClone, global);
       return {
         ...charClone,
@@ -162,8 +170,7 @@ export class FaintMemoryState {
     this.characters.update((chars) =>
       chars.map((char) => {
         if (char.id === id) {
-          // Usar la mutación más segura con JSON.parse/stringify
-          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+          const updatedChar: CharacterState = structuredClone(char);
 
           if (key === 'additionalDuplicationCost') {
             updatedChar.additionalDuplicationCost = Math.max(0, value);
@@ -186,8 +193,9 @@ export class FaintMemoryState {
             id: generateCardId(cardType),
             type: cardType,
             epiphanyLogs: [],
+            isConvertion: false,
           };
-          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+          const updatedChar: CharacterState = structuredClone(char);
 
           updatedChar.deck.push(newCard);
 
@@ -216,7 +224,7 @@ export class FaintMemoryState {
     this.characters.update((chars) =>
       chars.map((char) => {
         if (char.id === id) {
-          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+          const updatedChar: CharacterState = structuredClone(char);
 
           const cardIndex = updatedChar.deck.findIndex((card) => card.id === cardId);
 
@@ -242,7 +250,7 @@ export class FaintMemoryState {
       (chars) =>
         chars.map((char) => {
           if (char.id === id) {
-            const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+            const updatedChar: CharacterState = structuredClone(char);
 
             const cardToDuplicate = updatedChar.deck.find((card) => card.id === cardId);
 
@@ -268,21 +276,33 @@ export class FaintMemoryState {
    * Aplica la conversión de costo adicional de duplicación a puntos de Conversión.
    * @param id ID del personaje.
    */
-  convertCard(id: number): void {
+  convertCard(id: number, cardIndex: number): void {
     this.characters.update((chars) =>
       chars.map((char) => {
         if (char.id === id) {
-          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
-          const costValue = updatedChar.additionalDuplicationCost;
+          const updatedChar: CharacterState = structuredClone(char);
 
-          if (costValue > 0) {
-            // Sumar el costo adicional como conversiones
-            updatedChar.actionLogs.convertions += costValue;
-            // Reiniciar el costo adicional
-            updatedChar.additionalDuplicationCost = 0;
-          }
+          return {
+            ...updatedChar,
+            deck: updatedChar.deck.map((card, index) => {
+              if (index === cardIndex) {
+                const neutralCardInstance: CardInstance = {
+                  epiphanyLogs: [],
+                  id: generateCardId('NEUTRAL'),
+                  type: 'NEUTRAL',
+                  isConvertion: true,
+                };
 
-          return updatedChar;
+                return neutralCardInstance;
+              }
+
+              return card;
+            }),
+            actionLogs: {
+              ...updatedChar.actionLogs,
+              convertions: updatedChar.actionLogs.convertions + 1,
+            },
+          };
         }
         return char;
       }),
@@ -301,7 +321,7 @@ export class FaintMemoryState {
     this.characters.update((chars) =>
       chars.map((char) => {
         if (char.id === charId) {
-          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+          const updatedChar: CharacterState = structuredClone(char);
           const cardToUpdate = updatedChar.deck.find((card) => card.id === cardId);
 
           if (cardToUpdate) {
@@ -331,7 +351,7 @@ export class FaintMemoryState {
     this.characters.update((chars) =>
       chars.map((char) => {
         if (char.id === charId) {
-          const updatedChar: CharacterState = JSON.parse(JSON.stringify(char));
+          const updatedChar: CharacterState = structuredClone(char);
           const cardToUpdate = updatedChar.deck.find((card) => card.id === cardId);
 
           if (cardToUpdate && index >= 0 && index < cardToUpdate.epiphanyLogs.length) {
@@ -374,7 +394,7 @@ export class FaintMemoryState {
   ): { score: number; history: HistoryEntry[] } {
     let currentScore = 0;
     const history: HistoryEntry[] = [];
-
+    debugger;
     const addHistory = (type: HistoryEntry['type'], description: string, points: number) => {
       currentScore += points;
       history.push({
@@ -400,13 +420,13 @@ export class FaintMemoryState {
 
     for (const card of character.deck) {
       const cardTypeKey = card.type as keyof typeof FAINT_MEMORY_CONTRIBUTION;
-      deckContribution += FAINT_MEMORY_CONTRIBUTION[cardTypeKey];
+      deckContribution += card.isConvertion ? 0 : FAINT_MEMORY_CONTRIBUTION[cardTypeKey];
 
       for (const log of card.epiphanyLogs) {
         if (log.type === 'DIVINE') {
           divineEpiphaniesCount++;
         } else if (log.type === 'REGULAR') {
-          if (card.type === 'NEUTRAL' || card.type === 'FORBIDDEN') {
+          if ((card.type === 'NEUTRAL' && !card.isConvertion) || card.type === 'FORBIDDEN') {
             regularEpiphaniesCount['NEUTRAL_FORBIDDEN']++;
           } else if (card.type === 'MONSTER') {
             regularEpiphaniesCount['MONSTER']++;
