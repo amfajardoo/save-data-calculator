@@ -1,5 +1,7 @@
 <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl space-y-4 mt-4">
-  <div class="flex flex-wrap justify-between items-center border-b border-gray-700 pb-3">
+  <div
+    class="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center border-b border-gray-700 pb-3 gap-2"
+  >
     <input
       type="text"
       [ngModel]="character().name"
@@ -11,7 +13,7 @@
     </div>
   </div>
 
-  <div class="grid md:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="md:col-span-2 space-y-6">
       <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
         <h3 class="text-lg font-semibold mb-3 text-purple-300">
@@ -27,6 +29,7 @@
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             @for (card of character().deck; track card.id) {
               @let status = getEpiphanyStatus(card);
+
               @if (card.type === 'FORBIDDEN' || card.type === 'NEUTRAL') {
                 <div
                   class="p-3 rounded-lg relative group transition border"
@@ -182,7 +185,7 @@
         }
       </div>
 
-      <div class="flex flex-wrap gap-3 items-end justify-between">
+      <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-end justify-between">
         <button
           (click)="handleOpenAddCardModal()"
           class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition font-medium shadow-md"
@@ -190,7 +193,7 @@
           ➕ Añadir Carta al Deck
         </button>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <span class="text-sm text-gray-400">Cartas de Conversión:</span>
           <input
             type="number"
@@ -239,7 +242,7 @@
     </div>
   </div>
 
-  <div class="pt-4 flex justify-end gap-x-4">
+  <div class="pt-4 flex flex-col items-end gap-y-2 xl:flex-row xl:justify-end xl:gap-x-4">
     <button
       (click)="addInitialCards()"
       class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition font-medium"

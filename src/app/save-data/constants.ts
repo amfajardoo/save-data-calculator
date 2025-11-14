@@ -42,8 +42,8 @@ export const EPIPHANY_MODIFIERS = {
 // 4. COSTOS Y BONIFICACIONES DE ACCIÓN
 // ----------------------------------------------------
 
-// Este mapa define el patrón de costo/puntos (0, 10, 30, 50, 70) para remoción y duplicación
-export const ACTION_POINT_MAP = {
+// Este mapa define el patrón de costo/puntos (0, 10, 30, 50, 70) para acciones de costo.
+export const ACTION_COST_MAP = {
   ONE: 0,
   TWO: 10,
   THREE: 30,
@@ -51,15 +51,24 @@ export const ACTION_POINT_MAP = {
   FIVE: 70,
 };
 
+// Este mapa es específico para la remoción, donde el segundo paso es un bono.
+export const REMOVAL_POINT_MAP = {
+  ONE: 0,
+  TWO: -10,
+  THREE: -30,
+  FOUR: -50,
+  FIVE: -70,
+};
+
 export const ACTION_COSTS = {
-  // Puntos por ELIMINACIÓN (Progresión: 0, 10, 30, 50, 70)
-  REMOVE_CARDS_PROGRESSION: ACTION_POINT_MAP,
+  // Puntos por ELIMINACIÓN (Progresión: 0, +10, -30, -50, -70)
+  REMOVE_CARDS_PROGRESSION: REMOVAL_POINT_MAP,
 
   // Bonificación por ELIMINACIÓN de Carta de Personaje (Básica/Única)
   REMOVE_CHARACTER_CARD_BONUS: 20, // +20 adicional por cada carta de personaje eliminada
 
   // Puntos por DUPLICACIÓN (Progresión: 0, 10, 30, 50, 70)
-  DUPLICATE_CARDS_PROGRESSION: ACTION_POINT_MAP,
+  DUPLICATE_CARDS_PROGRESSION: ACTION_COST_MAP,
 
   // Puntos por CONVERSIÓN (El valor unitario que se multiplica por la cantidad del input)
   CONVERT_CARD: 10,
