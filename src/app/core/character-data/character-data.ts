@@ -1,77 +1,70 @@
-// character-data.component.ts
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatedCharacterState, FaintMemoryState } from '../../faint-memory/faint-memory-state';
 import { FAINT_MEMORY_CONTRIBUTION, ACTION_COSTS } from '../../save-data/constants';
 import { EpiphanyTargetCard, CardInstance } from '../../save-data/models';
+import { CharacterNameSelector } from '../character-name-selector/character-name-selector';
+import { CharacterOption, Czn } from '../czn/czn';
 
 @Component({
   selector: 'app-character-data',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CharacterNameSelector],
   templateUrl: './character-data.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CharacterDataComponent {
-  // Inputs usando la nueva API
   character = input.required<CalculatedCharacterState>();
   totalCap = input.required<number>();
 
-  // Outputs/Callbacks para delegar la apertura de modales al componente padre
   openAddCardModal = input.required<() => void>();
   openEpiphanyModal = input.required<(cardId: string, targetCard: EpiphanyTargetCard) => void>();
 
-  // Inyectar el servicio de estado para todas las mutaciones y utilidades
-  private readonly stateService = inject(FaintMemoryState);
+  private readonly faintMemoryState = inject(FaintMemoryState);
+  private readonly czn = inject(Czn);
 
-  // Constantes expuestas al template
   protected readonly FAINT_MEMORY_CONTRIBUTION = FAINT_MEMORY_CONTRIBUTION;
   protected readonly ACTION_COSTS = ACTION_COSTS;
+  protected readonly allAvailableCharacters: CharacterOption[] = this.czn.characters();
 
   addInitialCards() {
-    this.stateService.addInitialCards(this.character().id);
+    this.faintMemoryState.addInitialCards(this.character().id);
   }
 
-  // --- HANDLERS DE MUTACIÓN DEL ESTADO (Usan el servicio directamente) ---
-
   protected updateCharacter(key: keyof CalculatedCharacterState, value: any): void {
-    this.stateService.updateCharacter(this.character().id, key as any, value);
+    this.faintMemoryState.updateCharacter(this.character().id, key as any, value);
   }
 
   protected updateCardName(cardId: string, name: string): void {
-    this.stateService.updateCardName(this.character().id, cardId, name);
+    this.faintMemoryState.updateCardName(this.character().id, cardId, name);
   }
 
   protected removeCharacter(): void {
-    this.stateService.removeCharacter(this.character().id);
+    this.faintMemoryState.removeCharacter(this.character().id);
   }
 
   protected removeDeckCard(cardId: string): void {
-    this.stateService.removeDeckCard(this.character().id, cardId);
+    this.faintMemoryState.removeDeckCard(this.character().id, cardId);
   }
 
   protected duplicateCard(cardId: string): void {
-    this.stateService.duplicateCard(this.character().id, cardId);
+    this.faintMemoryState.duplicateCard(this.character().id, cardId);
   }
 
   protected convertCard(index: number): void {
-    this.stateService.convertCard(this.character().id, index);
+    this.faintMemoryState.convertCard(this.character().id, index);
   }
-
-  // --- HANDLERS DE APERTURA DE MODAL (Usan los callbacks inyectados) ---
 
   protected handleOpenAddCardModal(): void {
     this.openAddCardModal()();
   }
 
   protected handleOpenEpiphanyModalForCard(cardId: string, targetCard: EpiphanyTargetCard): void {
-    // Llama al callback inyectado con los argumentos necesarios
     this.openEpiphanyModal()(cardId, targetCard);
   }
 
-  // --- MÉTODOS DE UTILIDAD (Del servicio) ---
   protected getEpiphanyStatus(card: CardInstance) {
-    return this.stateService.getEpiphanyStatus(card);
+    return this.faintMemoryState.getEpiphanyStatus(card);
   }
 }

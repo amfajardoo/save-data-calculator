@@ -6,7 +6,6 @@ import { FaintMemoryState } from '../faint-memory/faint-memory-state';
 import { FAINT_MEMORY_CONTRIBUTION } from '../save-data/constants';
 import { CardType } from '../save-data/models';
 
-// El data inyectado es el ID del personaje
 export type AddCardModalData = { characterId: number };
 
 @Component({

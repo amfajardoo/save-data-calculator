@@ -48,7 +48,7 @@ const INITIAL_CARDS_BATCH: CardInstance[] = [
 
 const INITIAL_CHARACTER_STATE: CharacterState = {
   id: 1,
-  name: 'Nuevo Personaje',
+  name: 'Amir',
   deck: [],
   additionalDuplicationCost: 0,
   actionLogs: {
@@ -76,7 +76,7 @@ export class FaintMemoryState {
   });
 
   protected readonly characters = signal<CharacterState[]>([
-    { ...INITIAL_CHARACTER_STATE, id: 1, name: 'Personaje 1' },
+    { ...INITIAL_CHARACTER_STATE, id: 1, name: 'Amir' },
   ]);
 
   // --- PUBLIC READ-ONLY SIGNALS (Para consumo por componentes) ---
@@ -96,11 +96,9 @@ export class FaintMemoryState {
     return cap;
   });
 
-  // El cálculo principal se mantiene en el servicio
   readonly calculatedCharacters = computed<CalculatedCharacterState[]>(() => {
     const global = this.globalState();
     return this.characters().map((char) => {
-      // Clonar para asegurar que el cálculo sea puro
       const charClone = structuredClone(char);
       const { score, history } = this.calculateFaintMemory(charClone, global);
       return {
@@ -357,7 +355,7 @@ export class FaintMemoryState {
       {
         ...INITIAL_CHARACTER_STATE,
         id: newId,
-        name: `Personaje ${newId}`,
+        name: `Amir`,
       },
     ]);
   }

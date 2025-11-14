@@ -1,16 +1,3 @@
-export const INITIAL_CHARACTER_STATE: CharacterState = {
-  id: 1,
-  name: 'Nuevo Personaje',
-  deck: [],
-  additionalDuplicationCost: 0,
-  actionLogs: {
-    removals: 0,
-    duplications: 0,
-    convertions: 0,
-    characterCardRemovals: 0,
-  },
-};
-
 export type CardType = 'NEUTRAL' | 'FORBIDDEN' | 'MONSTER' | 'BASIC' | 'UNIQUE';
 
 export interface CardInstance {
