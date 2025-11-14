@@ -46,4 +46,9 @@ export class Czn {
   getCharacterImgPath(slug: string) {
     return this.availableCharacters().find((c) => c.slug === slug)?.imageUrl || '';
   }
+
+  getRandomCharacterName(): string {
+    return this.availableCharacters()[Math.floor(Math.random() * this.availableCharacters().length)]
+      .name;
+  }
 }

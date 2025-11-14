@@ -13,12 +13,12 @@ import {
   CardInstance,
   EpiphanyTargetCard,
 } from '../save-data/models';
+import { Czn } from '../core/czn/czn';
 
 type CreateCardOptions = Partial<Omit<CardInstance, 'id' | 'type' | 'name'>>;
 let cardIdCounter = 0;
 const generateCardId = (type: CardType): string => {
   cardIdCounter++;
-  // Usamos 'NEUTRAL' para el ID base de 'NEUTRAL' y 'FORBIDDEN'
   const idType = type === 'FORBIDDEN' ? 'NEUTRAL' : type.charAt(0);
   return `${idType}_${cardIdCounter}`;
 };
@@ -48,7 +48,7 @@ const INITIAL_CARDS_BATCH: CardInstance[] = [
 
 const INITIAL_CHARACTER_STATE: CharacterState = {
   id: 1,
-  name: 'Amir',
+  name: '',
   deck: [],
   additionalDuplicationCost: 0,
   actionLogs: {
@@ -64,19 +64,16 @@ export interface CalculatedCharacterState extends CharacterState {
   history: HistoryEntry[];
 }
 
-// --- SERVICE ---
-
 @Injectable({ providedIn: 'root' })
 export class FaintMemoryState {
-  // --- STATE SIGNALS ---
-  // El estado de los modales (showModal) fue eliminado.
+  private readonly czn = inject(Czn);
   protected readonly globalState = signal<GlobalRunState>({
     tier: 5,
     isNightmare: false,
   });
 
   protected readonly characters = signal<CharacterState[]>([
-    { ...INITIAL_CHARACTER_STATE, id: 1, name: 'Amir' },
+    { ...INITIAL_CHARACTER_STATE, id: 1, name: this.czn.getRandomCharacterName() },
   ]);
 
   // --- PUBLIC READ-ONLY SIGNALS (Para consumo por componentes) ---
@@ -344,8 +341,6 @@ export class FaintMemoryState {
     );
   }
 
-  // --- Character List Mutation ---
-
   addCharacter(): void {
     const newId =
       this.characters().length > 0 ? Math.max(...this.characters().map((c) => c.id)) + 1 : 1;
@@ -355,7 +350,7 @@ export class FaintMemoryState {
       {
         ...INITIAL_CHARACTER_STATE,
         id: newId,
-        name: `Amir`,
+        name: this.czn.getRandomCharacterName(),
       },
     ]);
   }
