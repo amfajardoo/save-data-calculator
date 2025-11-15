@@ -34,7 +34,6 @@ export interface CharacterState {
   id: number;
   name: string;
   deck: CharacterDeck;
-  additionalDuplicationCost: number;
   actionLogs: {
     removals: number;
     duplications: number;

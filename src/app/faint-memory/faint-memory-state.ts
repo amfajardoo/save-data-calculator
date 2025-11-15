@@ -50,7 +50,6 @@ const INITIAL_CHARACTER_STATE: CharacterState = {
   id: 1,
   name: '',
   deck: [],
-  additionalDuplicationCost: 0,
   actionLogs: {
     removals: 0,
     duplications: 0,
@@ -139,9 +138,7 @@ export class FaintMemoryState {
         if (char.id === id) {
           const updatedChar: CharacterState = structuredClone(char);
 
-          if (key === 'additionalDuplicationCost') {
-            updatedChar.additionalDuplicationCost = Math.max(0, value);
-          } else if (key in updatedChar) {
+          if (key in updatedChar) {
             (updatedChar as any)[key] = value;
           }
 
@@ -448,13 +445,11 @@ export class FaintMemoryState {
       count: number,
       progressionMap: typeof ACTION_COSTS.REMOVE_CARDS_PROGRESSION,
     ): number => {
-      // El índice se basa en la cuenta (1-indexed)
       const index = Math.min(count, actionKeys.length);
       const key = actionKeys[index - 1];
       return key ? progressionMap[key as keyof typeof progressionMap] : 0;
     };
 
-    // 1. Removals Cost (Costo Progresivo)
     const removalCost = getProgressionCost(
       character.actionLogs.removals,
       ACTION_COSTS.REMOVE_CARDS_PROGRESSION,
@@ -464,7 +459,6 @@ export class FaintMemoryState {
       addHistory('ACTION', `Eliminación (${character.actionLogs.removals}x)`, -removalCost);
     }
 
-    // 2. Character Card Removals Bonus
     if (character.actionLogs.characterCardRemovals > 0) {
       const charRemovalBonus =
         character.actionLogs.characterCardRemovals * ACTION_COSTS.REMOVE_CHARACTER_CARD_BONUS;
@@ -475,21 +469,14 @@ export class FaintMemoryState {
       );
     }
 
-    // 3. Duplication Cost
     const duplicationCost = getProgressionCost(
       character.actionLogs.duplications,
       ACTION_COSTS.DUPLICATE_CARDS_PROGRESSION,
     );
     if (character.actionLogs.duplications > 0) {
-      addHistory('ACTION', `Duplicación (${character.actionLogs.duplications}x)`, -duplicationCost);
+      addHistory('ACTION', `Duplicación (${character.actionLogs.duplications}x)`, duplicationCost);
     }
 
-    // 4. Additional Duplication Cost (Manual Input) - COSTO
-    if (character.additionalDuplicationCost > 0) {
-      addHistory('ACTION', `Duplicación`, -Math.abs(character.additionalDuplicationCost));
-    }
-
-    // 5. Conversion Bonus - BONO
     if (character.actionLogs.convertions > 0) {
       const conversionTotalBonus = character.actionLogs.convertions * ACTION_COSTS.CONVERT_CARD;
       addHistory(
