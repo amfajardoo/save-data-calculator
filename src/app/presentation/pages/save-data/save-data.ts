@@ -1,25 +1,26 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FAINT_MEMORY_CONTRIBUTION, EPIPHANY_MODIFIERS, ACTION_COSTS } from './constants';
-import { EpiphanyTargetCard } from './models';
 import { Dialog } from '@angular/cdk/dialog';
-import { AddCardModal } from '../common/add-card';
-import { EpiphanyModal, EpiphanyModalData } from '../common/epiphany';
-import { Modal } from '../common/modal';
-import { CharacterDataComponent } from '../core/character-data/character-data';
-import { GlobalConfigComponent } from '../core/global-config/global-config';
-import { FaintMemoryState } from '../faint-memory/faint-memory-state';
+import { AddCardModal } from '@app/common/add-card-modal';
+import { FAINT_MEMORY_CONTRIBUTION, EPIPHANY_MODIFIERS, ACTION_COSTS } from '@app/common/constants';
+import { EpiphanyModalData, EpiphanyModal } from '@app/common/epiphany-modal';
+import { Modal } from '@app/common/modal';
+import { EpiphanyTargetCard } from '@app/domain/models';
+import { FaintMemoryState } from '@app/domain/services/faint-memory-state';
+import { CharacterDataComponent } from '@app/presentation/components/character-data/character-data';
+import { GlobalConfigComponent } from '@app/presentation/components/global-config/global-config';
+import { UndoButton } from '@app/presentation/components/undo-button/undo-button';
 
 @Component({
   selector: 'app-save-data',
   standalone: true,
-  imports: [CommonModule, FormsModule, GlobalConfigComponent, CharacterDataComponent],
+  imports: [CommonModule, FormsModule, GlobalConfigComponent, CharacterDataComponent, UndoButton],
   templateUrl: './save-data.html',
   styleUrl: './save-data.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SaveData {
+export class SaveData {
   private readonly stateService = inject(FaintMemoryState);
   private readonly modalService = inject(Modal);
   private readonly cdkDialog = inject(Dialog);
@@ -31,11 +32,14 @@ export default class SaveData {
   protected readonly globalState = this.stateService.globalState$;
   protected readonly totalCap = this.stateService.totalCap;
   protected readonly calculatedCharacters = this.stateService.calculatedCharacters;
+  protected readonly canUndo = this.stateService.canUndo$;
+  protected readonly lastAction = this.stateService.lastAction$;
 
   protected updateGlobalTier = (tier: number) => this.stateService.updateGlobalTier(tier);
   protected updateGlobalNightmare = (isNightmare: boolean) =>
     this.stateService.updateGlobalNightmare(isNightmare);
   protected addCharacter = () => this.stateService.addCharacter();
+  protected undo = () => this.stateService.undo();
 
   openAddCardModal(characterId: number): void {
     this.modalService.open<boolean, { characterId: number }>(AddCardModal, {
@@ -45,7 +49,6 @@ export default class SaveData {
 
   openEpiphanyModal(characterId: number, cardId: string, target: EpiphanyTargetCard): void {
     const modalData: EpiphanyModalData = { characterId, cardId, target };
-
     this.modalService.open<boolean, EpiphanyModalData>(EpiphanyModal, {
       data: modalData,
     });

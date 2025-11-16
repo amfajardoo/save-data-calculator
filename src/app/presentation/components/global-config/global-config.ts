@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GlobalRunState } from '../../save-data/models';
+import { GlobalRunState } from '@app/domain/models';
 
 @Component({
   selector: 'app-global-config',

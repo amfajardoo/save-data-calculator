@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { computed } from '@angular/core';
-import { FaintMemoryState } from '../faint-memory/faint-memory-state';
-import { EPIPHANY_MODIFIERS } from '../save-data/constants';
-import { EpiphanyTargetCard, CardInstance } from '../save-data/models';
+import { EpiphanyTargetCard, CardInstance } from '@app/domain/models';
+import { FaintMemoryState } from '@app/domain/services/faint-memory-state';
+import { EPIPHANY_MODIFIERS } from './constants';
 
 export type EpiphanyModalData = {
   characterId: number;

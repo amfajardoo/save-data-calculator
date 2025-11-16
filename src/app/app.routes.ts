@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: 'save-data',
-    loadComponent: () => import('./save-data/save-data'),
+    loadComponent: () => import('@presentation/pages').then((m) => m.SaveData),
   },
   {
     path: '',
@@ -13,5 +13,5 @@ export const routes: Routes = [
   {
     path: '**',
     redirectTo: 'save-data',
-  }
+  },
 ];

@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CharacterOption } from '../czn/czn';
+import { CharacterOption } from '../../../domain/services/czn';
 
 @Component({
   selector: 'app-character-name-selector',

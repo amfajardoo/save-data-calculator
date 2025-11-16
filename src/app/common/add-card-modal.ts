@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
-import { FaintMemoryState } from '../faint-memory/faint-memory-state';
-import { FAINT_MEMORY_CONTRIBUTION } from '../save-data/constants';
-import { CardType } from '../save-data/models';
+import { CardType } from '@app/domain/models';
+import { FaintMemoryState } from '@app/domain/services/faint-memory-state';
+import { FAINT_MEMORY_CONTRIBUTION } from './constants';
 
 export type AddCardModalData = { characterId: number };
 

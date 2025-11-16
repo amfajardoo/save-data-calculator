@@ -48,3 +48,9 @@ export interface ModalState {
   cardId: string | null;
   epiphanyTarget: EpiphanyTargetCard | null;
 }
+
+export interface TIER_SAVE_DATA {
+  name: string;
+  points: number;
+  tier: number;
+}

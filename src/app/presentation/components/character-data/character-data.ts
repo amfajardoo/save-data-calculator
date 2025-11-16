@@ -1,17 +1,21 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CalculatedCharacterState, FaintMemoryState } from '../../faint-memory/faint-memory-state';
-import { FAINT_MEMORY_CONTRIBUTION, ACTION_COSTS } from '../../save-data/constants';
-import { EpiphanyTargetCard, CardInstance } from '../../save-data/models';
+import { FAINT_MEMORY_CONTRIBUTION, ACTION_COSTS } from '@app/common/constants';
+import { EpiphanyTargetCard, CardInstance } from '@app/domain/models';
+import { Czn, CharacterOption } from '@app/domain/services/czn';
+import {
+  CalculatedCharacterState,
+  FaintMemoryState,
+} from '@app/domain/services/faint-memory-state';
 import { CharacterNameSelector } from '../character-name-selector/character-name-selector';
-import { CharacterOption, Czn } from '../czn/czn';
 
 @Component({
   selector: 'app-character-data',
   standalone: true,
   imports: [CommonModule, FormsModule, CharacterNameSelector],
   templateUrl: './character-data.html',
+  styleUrl: './character-data.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CharacterDataComponent {

@@ -1,8 +1,4 @@
-export interface TIER_SAVE_DATA {
-  name: string;
-  points: number;
-  tier: number;
-}
+import { CharacterState } from '@app/domain/models';
 
 const TIER_BASE_VALUE = 30;
 
@@ -46,4 +42,16 @@ export const ACTION_COSTS = {
   DUPLICATE_CARDS_PROGRESSION: ACTION_COST_MAP,
   CONVERT_CARD: 10,
   NIGHTMARE_CAP_BONUS: 10,
+};
+
+export const INITIAL_CHARACTER_STATE: CharacterState = {
+  id: 1,
+  name: '',
+  deck: [],
+  actionLogs: {
+    removals: 0,
+    duplications: 0,
+    convertions: 0,
+    characterCardRemovals: 0,
+  },
 };
