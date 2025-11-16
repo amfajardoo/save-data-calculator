@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal, Signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import {
   TIERS_SAVE_DATA,
   ACTION_COSTS,
@@ -75,11 +75,8 @@ export class FaintMemoryState {
     { ...INITIAL_CHARACTER_STATE, id: 1, name: this.czn.getRandomCharacterName() },
   ]);
 
-  // --- PUBLIC READ-ONLY SIGNALS (Para consumo por componentes) ---
   readonly globalState$ = this.globalState.asReadonly();
   readonly characters$ = this.characters.asReadonly();
-
-  // --- COMPUTED STATE (Calculated Properties) ---
 
   readonly totalCap = computed(() => {
     const global = this.globalState();
@@ -105,8 +102,6 @@ export class FaintMemoryState {
     });
   });
 
-  // --- PUBLIC UTILITY METHODS ---
-
   getEpiphanyStatus(card: CardInstance) {
     const hasRegular = card.epiphanyLogs.some((log) => log.type === 'REGULAR');
     const hasDivine = card.epiphanyLogs.some((log) => log.type === 'DIVINE');
@@ -120,8 +115,6 @@ export class FaintMemoryState {
       isDivineOnly: hasDivine && !hasRegular,
     };
   }
-
-  // --- PUBLIC STATE MUTATION METHODS ---
 
   updateGlobalTier(tier: number): void {
     if (tier < 1) tier = 1;
@@ -247,10 +240,6 @@ export class FaintMemoryState {
     );
   }
 
-  /**
-   * Aplica la conversión de costo adicional de duplicación a puntos de Conversión.
-   * @param id ID del personaje.
-   */
   convertCard(id: number, cardIndex: number): void {
     this.characters.update((chars) =>
       chars.map((char) => {
@@ -281,9 +270,6 @@ export class FaintMemoryState {
     );
   }
 
-  /**
-   * Añade un log de Epifanía a una carta específica.
-   */
   addEpiphany(
     charId: number,
     cardId: string,
@@ -297,7 +283,6 @@ export class FaintMemoryState {
           const cardToUpdate = updatedChar.deck.find((card) => card.id === cardId);
 
           if (cardToUpdate) {
-            // Clonamos el array de logs para evitar mutación directa
             const currentLogs = [...cardToUpdate.epiphanyLogs];
 
             const exists = currentLogs.some(
@@ -316,9 +301,6 @@ export class FaintMemoryState {
     );
   }
 
-  /**
-   * Remueve un log de Epifanía por índice.
-   */
   removeEpiphany(charId: number, cardId: string, index: number): void {
     this.characters.update((chars) =>
       chars.map((char) => {
@@ -327,7 +309,6 @@ export class FaintMemoryState {
           const cardToUpdate = updatedChar.deck.find((card) => card.id === cardId);
 
           if (cardToUpdate && index >= 0 && index < cardToUpdate.epiphanyLogs.length) {
-            // Usamos splice en la copia para remover el elemento.
             cardToUpdate.epiphanyLogs.splice(index, 1);
           }
 
@@ -356,8 +337,6 @@ export class FaintMemoryState {
     this.characters.update((chars) => chars.filter((char) => char.id !== id));
   }
 
-  // --- CORE FM CALCULATION LOGIC (Private) ---
-
   private calculateFaintMemory(
     character: CharacterState,
     globalState: GlobalRunState,
@@ -373,10 +352,6 @@ export class FaintMemoryState {
         cumulativeFaintMemory: currentScore,
       });
     };
-
-    // ------------------------------------------------------------------
-    // A. CÁLCULO DE CONTRIBUCIÓN BASE DEL INVENTARIO FINAL (Deck)
-    // ------------------------------------------------------------------
 
     let deckContribution = 0;
     let divineEpiphaniesCount = 0;
@@ -408,10 +383,6 @@ export class FaintMemoryState {
       addHistory('DECK', `Contribución Base del Deck`, deckContribution);
     }
 
-    // ------------------------------------------------------------------
-    // B. CÁLCULO DE MODIFICADORES DE EPIFANÍA
-    // ------------------------------------------------------------------
-
     if (divineEpiphaniesCount > 0) {
       const divineBonus = divineEpiphaniesCount * EPIPHANY_MODIFIERS.DIVINE_BONUS;
       addHistory('ACTION', `Epifanías Divinas (${divineEpiphaniesCount}x)`, divineBonus);
@@ -435,10 +406,6 @@ export class FaintMemoryState {
       );
     }
 
-    // ------------------------------------------------------------------
-    // C. CÁLCULO DE ACCIONES (Costos/Puntos)
-    // ------------------------------------------------------------------
-
     const actionKeys = Object.keys(ACTION_COSTS.REMOVE_CARDS_PROGRESSION);
 
     const getProgressionCost = (
@@ -456,7 +423,7 @@ export class FaintMemoryState {
     );
 
     if (character.actionLogs.removals > 0) {
-      addHistory('ACTION', `Eliminación (${character.actionLogs.removals}x)`, -removalCost);
+      addHistory('ACTION', `Eliminación (${character.actionLogs.removals}x)`, removalCost);
     }
 
     if (character.actionLogs.characterCardRemovals > 0) {
@@ -486,10 +453,6 @@ export class FaintMemoryState {
       );
     }
 
-    // ------------------------------------------------------------------
-    // D. CÁLCULO Y APLICACIÓN DEL LÍMITE (CAP) GLOBAL
-    // ------------------------------------------------------------------
-
     const currentTierCap = TIERS_SAVE_DATA(globalState.tier);
 
     let totalCap = currentTierCap;
@@ -508,7 +471,6 @@ export class FaintMemoryState {
       addHistory('DECK', `Límite (CAP) Potencial: ${totalCap}`, 0);
     }
 
-    // Filtra las entradas con 0 puntos, excepto si son el log de límite aplicado
     const filteredHistory = history.filter(
       (entry) => entry.points !== 0 || entry.description.includes('❌ Límite (CAP) aplicado'),
     );

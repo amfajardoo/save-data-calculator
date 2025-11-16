@@ -1,4 +1,3 @@
-// add-card.modal.ts
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
@@ -61,21 +60,17 @@ export type AddCardModalData = { characterId: number };
 })
 export class AddCardModal {
   private readonly stateService = inject(FaintMemoryState);
-  // DIALOG_DATA contiene los datos pasados al modal.
   private readonly characterId = inject<AddCardModalData>(DIALOG_DATA).characterId;
-  // DialogRef se usa para cerrar el modal y devolver un resultado.
   private readonly dialogRef = inject(DialogRef<boolean>);
 
   protected readonly FAINT_MEMORY_CONTRIBUTION = FAINT_MEMORY_CONTRIBUTION;
 
   addCard(cardType: CardType): void {
-    // La lógica de mutación se llama a través del StateService
-    // El CardType para Neutral aplica también a Forbidden para el cálculo de FM.
     this.stateService.addDeckCard(this.characterId, cardType);
-    this.dialogRef.close(true); // Cerrar y retornar true
+    this.dialogRef.close(true);
   }
 
   close(): void {
-    this.dialogRef.close(false); // Cerrar y retornar false
+    this.dialogRef.close(false);
   }
 }

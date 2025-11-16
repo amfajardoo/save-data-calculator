@@ -1,4 +1,3 @@
-// epiphany.modal.ts
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +7,6 @@ import { FaintMemoryState } from '../faint-memory/faint-memory-state';
 import { EPIPHANY_MODIFIERS } from '../save-data/constants';
 import { EpiphanyTargetCard, CardInstance } from '../save-data/models';
 
-// Datos inyectados al modal
 export type EpiphanyModalData = {
   characterId: number;
   cardId: string;
@@ -96,18 +94,14 @@ export class EpiphanyModal {
   private readonly dialogRef = inject(DialogRef<boolean>);
   protected readonly EPIPHANY_MODIFIERS = EPIPHANY_MODIFIERS;
 
-  // Datos inyectados del componente que abre el modal
   private readonly modalData = inject<EpiphanyModalData>(DIALOG_DATA);
   protected selectedType: 'REGULAR' | 'DIVINE' = 'REGULAR';
 
-  // Obtener la carta relevante usando `computed` (se actualizará automáticamente)
   protected readonly currentCard = computed<CardInstance | undefined>(() => {
     const char = this.stateService.characters$().find((c) => c.id === this.modalData.characterId);
-    // Asume que la carta existe si se abrió el modal correctamente
     return char?.deck.find((card) => card.id === this.modalData.cardId);
   });
 
-  // Mostrar el tipo de carta objetivo de la Epifanía
   protected displayTarget = computed(() => {
     const target = this.modalData.target;
     return target === 'MONSTER'
@@ -117,10 +111,6 @@ export class EpiphanyModal {
         : 'Error de Objetivo';
   });
 
-  /**
-   * Llama al servicio para añadir la Epifanía.
-   * La vista se actualiza automáticamente gracias a las señales.
-   */
   addEpiphany(): void {
     if (!this.currentCard()) return;
 
@@ -130,23 +120,14 @@ export class EpiphanyModal {
       this.selectedType,
       this.modalData.target,
     );
-    // No cerramos el modal para permitir múltiples adiciones o correcciones.
   }
 
-  /**
-   * Llama al servicio para remover un log de Epifanía específico.
-   * @param logIndex Índice del log a remover.
-   */
   removeEpiphany(logIndex: number): void {
     if (!this.currentCard()) return;
 
-    // Llamada al método de mutación del estado
     this.stateService.removeEpiphany(this.modalData.characterId, this.modalData.cardId, logIndex);
   }
 
-  /**
-   * Cierra el modal.
-   */
   close(): void {
     this.dialogRef.close(true);
   }
