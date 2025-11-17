@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FAINT_MEMORY_CONTRIBUTION, ACTION_COSTS } from '@app/common/constants';
@@ -8,12 +15,11 @@ import {
   CalculatedCharacterState,
   FaintMemoryState,
 } from '@app/domain/services/faint-memory-state';
-import { CharacterNameSelector } from '../character-name-selector/character-name-selector';
 
 @Component({
   selector: 'app-character-data',
   standalone: true,
-  imports: [CommonModule, FormsModule, CharacterNameSelector],
+  imports: [CommonModule, FormsModule],
   templateUrl: './character-data.html',
   styleUrl: './character-data.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,17 +38,11 @@ export class CharacterDataComponent {
   protected readonly ACTION_COSTS = ACTION_COSTS;
   protected readonly allAvailableCharacters: CharacterOption[] = this.czn.characters();
 
-  addInitialCards() {
-    this.faintMemoryState.addInitialCards(this.character().id);
-  }
+  convertingCardIndex = signal<number | null>(null);
+  convertProgress = signal(0);
 
-  protected updateCharacter(key: keyof CalculatedCharacterState, value: any): void {
-    this.faintMemoryState.updateCharacter(this.character().id, key as any, value);
-  }
-
-  protected updateCardName(cardId: string, name: string): void {
-    this.faintMemoryState.updateCardName(this.character().id, cardId, name);
-  }
+  private convertTimeout: any;
+  private convertInterval: any;
 
   protected removeCharacter(): void {
     this.faintMemoryState.removeCharacter(this.character().id);
@@ -70,5 +70,39 @@ export class CharacterDataComponent {
 
   protected getEpiphanyStatus(card: CardInstance) {
     return this.faintMemoryState.getEpiphanyStatus(card);
+  }
+
+  startConverting(index: number) {
+    this.convertingCardIndex.set(index);
+    this.convertProgress.set(0);
+
+    const duration = 500;
+    const intervalTime = 100;
+    const increment = (intervalTime / duration) * 100;
+
+    this.convertInterval = setInterval(() => {
+      const current = this.convertProgress();
+      if (current >= 100) {
+        this.completeConversion(index);
+      } else {
+        this.convertProgress.set(current + increment);
+      }
+    }, intervalTime);
+
+    this.convertTimeout = setTimeout(() => {
+      this.completeConversion(index);
+    }, duration);
+  }
+
+  cancelConverting() {
+    clearTimeout(this.convertTimeout);
+    clearInterval(this.convertInterval);
+    this.convertingCardIndex.set(null);
+    this.convertProgress.set(0);
+  }
+
+  completeConversion(index: number) {
+    this.cancelConverting();
+    this.convertCard(index);
   }
 }

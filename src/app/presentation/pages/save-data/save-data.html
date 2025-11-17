@@ -7,15 +7,17 @@
   ></app-global-config>
 
   <div class="flex gap-2 mb-2">
+    <app-undo-button [canUndo]="canUndo()" [lastAction]="lastAction()" (onUndo)="undo()" />
+
     @if (calculatedCharacters().length < 3) {
       <button
-        (click)="addCharacter()"
+        (click)="openSelectCharacterModal()"
         class="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg border-2 border-dashed border-slate-600 text-sm font-semibold transition flex items-center justify-center gap-1.5"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -29,8 +31,6 @@
         Añadir Nuevo Personaje
       </button>
     }
-
-    <app-undo-button [canUndo]="canUndo()" [lastAction]="lastAction()" (onUndo)="undo()" />
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">

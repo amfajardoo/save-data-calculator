@@ -43,15 +43,3 @@ export const ACTION_COSTS = {
   CONVERT_CARD: 10,
   NIGHTMARE_CAP_BONUS: 10,
 };
-
-export const INITIAL_CHARACTER_STATE: CharacterState = {
-  id: 1,
-  name: '',
-  deck: [],
-  actionLogs: {
-    removals: 0,
-    duplications: 0,
-    convertions: 0,
-    characterCardRemovals: 0,
-  },
-};

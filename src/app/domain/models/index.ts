@@ -1,9 +1,12 @@
+import { CharacterOption } from '../services/czn';
+
 export type CardType = 'NEUTRAL' | 'FORBIDDEN' | 'MONSTER' | 'BASIC' | 'UNIQUE';
 
 export interface CardInstance {
   id: string;
   type: CardType;
   name: string;
+  imgUrl: string;
   epiphanyLogs: EpiphanyLog[];
   isConvertion: boolean;
   isDuplicate: boolean;
@@ -32,7 +35,7 @@ export interface EpiphanyLog {
 
 export interface CharacterState {
   id: number;
-  name: string;
+  character: CharacterOption;
   deck: CharacterDeck;
   actionLogs: {
     removals: number;

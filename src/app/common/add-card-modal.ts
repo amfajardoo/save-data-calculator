@@ -31,22 +31,6 @@ export type AddCardModalData = { characterId: number };
           <div class="font-bold text-sm mt-1">Monstruo</div>
           <div class="text-xs text-gray-900 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.MONSTER }} FM</div>
         </button>
-        <button
-          (click)="addCard('BASIC')"
-          class="flex flex-col items-center justify-center p-4 rounded-lg bg-yellow-600 hover:bg-yellow-700 transition shadow-lg border border-white"
-        >
-          <span class="text-3xl">⬜</span>
-          <div class="font-bold text-sm mt-1">BÁSICA</div>
-          <div class="text-xs text-gray-900 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.BASIC }} FM</div>
-        </button>
-        <button
-          (click)="addCard('UNIQUE')"
-          class="flex flex-col items-center justify-center p-4 rounded-lg bg-blue-400 hover:bg-blue-500 transition shadow-lg border border-white"
-        >
-          <span class="text-3xl">⭐</span>
-          <div class="font-bold text-sm mt-1">ÚNICA</div>
-          <div class="text-xs text-gray-900 mt-1">+{{ FAINT_MEMORY_CONTRIBUTION.UNIQUE }} FM</div>
-        </button>
       </div>
       <button
         (click)="close()"

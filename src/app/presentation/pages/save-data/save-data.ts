@@ -11,6 +11,7 @@ import { FaintMemoryState } from '@app/domain/services/faint-memory-state';
 import { CharacterDataComponent } from '@app/presentation/components/character-data/character-data';
 import { GlobalConfigComponent } from '@app/presentation/components/global-config/global-config';
 import { UndoButton } from '@app/presentation/components/undo-button/undo-button';
+import { SelectCharacterModal } from '@app/common/select-character-modal';
 
 @Component({
   selector: 'app-save-data',
@@ -38,13 +39,16 @@ export class SaveData {
   protected updateGlobalTier = (tier: number) => this.stateService.updateGlobalTier(tier);
   protected updateGlobalNightmare = (isNightmare: boolean) =>
     this.stateService.updateGlobalNightmare(isNightmare);
-  protected addCharacter = () => this.stateService.addCharacter();
   protected undo = () => this.stateService.undo();
 
   openAddCardModal(characterId: number): void {
     this.modalService.open<boolean, { characterId: number }>(AddCardModal, {
       data: { characterId },
     });
+  }
+
+  openSelectCharacterModal(): void {
+    this.modalService.open<boolean>(SelectCharacterModal);
   }
 
   openEpiphanyModal(characterId: number, cardId: string, target: EpiphanyTargetCard): void {

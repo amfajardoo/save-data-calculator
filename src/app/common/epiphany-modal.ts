@@ -15,7 +15,6 @@ export type EpiphanyModalData = {
 
 @Component({
   selector: 'app-epiphany-modal',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="bg-gray-800 rounded-xl p-6 max-w-sm w-full border border-yellow-500 shadow-2xl">

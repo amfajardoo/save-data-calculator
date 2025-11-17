@@ -8,10 +8,9 @@ import {
   EpiphanyTargetCard,
 } from '../models';
 import { CardFactory } from './card-factory';
-import { Czn } from './czn';
+import { CharacterOption, Czn } from './czn';
 import { FaintMemoryCalculator } from './faint-memory-calculator';
 import { HistoryManager } from './history-manager';
-import { INITIAL_CHARACTER_STATE } from '@common/constants';
 
 export interface CalculatedCharacterState extends CharacterState {
   score: number;
@@ -30,9 +29,7 @@ export class FaintMemoryState {
     isNightmare: false,
   });
 
-  private readonly characters = signal<CharacterState[]>([
-    { ...INITIAL_CHARACTER_STATE, id: 1, name: this.czn.getRandomCharacterName() },
-  ]);
+  private readonly characters = signal<CharacterState[]>([]);
 
   readonly globalState$ = this.globalState.asReadonly();
   readonly characters$ = this.characters.asReadonly();
@@ -75,22 +72,6 @@ export class FaintMemoryState {
     this.globalState.update((state) => ({ ...state, isNightmare }));
   }
 
-  updateCharacter(id: number, key: keyof CharacterState, value: any): void {
-    this.saveSnapshot(`Actualización de personaje: ${key}`);
-    this.characters.update((chars) =>
-      chars.map((char) => {
-        if (char.id === id) {
-          const updatedChar = structuredClone(char);
-          if (key in updatedChar) {
-            (updatedChar as any)[key] = value;
-          }
-          return updatedChar;
-        }
-        return char;
-      }),
-    );
-  }
-
   updateCardName(charId: number, cardId: string, name: string): void {
     this.characters.update((chars) =>
       chars.map((char) => {
@@ -107,19 +88,32 @@ export class FaintMemoryState {
     );
   }
 
-  addCharacter(): void {
-    this.saveSnapshot('Añadir personaje');
+  addCharacter(character: CharacterOption): void {
+    this.saveSnapshot(`Añadir personaje - ${character.name}`);
     const newId =
       this.characters().length > 0 ? Math.max(...this.characters().map((c) => c.id)) + 1 : 1;
-
-    this.characters.update((chars) => [
-      ...chars,
-      {
-        ...INITIAL_CHARACTER_STATE,
-        id: newId,
-        name: this.czn.getRandomCharacterName(),
+    const newCharacter: CharacterState = {
+      id: newId,
+      character,
+      actionLogs: {
+        removals: 0,
+        duplications: 0,
+        convertions: 0,
+        characterCardRemovals: 0,
       },
-    ]);
+      deck: [
+        ...character.baseCards.map((cardName: string, index: number) =>
+          this.cardFactory.createCard('BASIC', cardName, { imgUrl: character.cardsImgUrl[index] }),
+        ),
+        ...character.uniqueCards.map((cardName: string, index: number) =>
+          this.cardFactory.createCard('UNIQUE', cardName, {
+            imgUrl: character.cardsImgUrl[index + 4],
+          }),
+        ),
+      ],
+    };
+
+    this.characters.update((chars) => [...chars, newCharacter]);
   }
 
   removeCharacter(id: number): void {
@@ -132,25 +126,12 @@ export class FaintMemoryState {
     this.characters.update((chars) =>
       chars.map((char) => {
         if (char.id === id) {
-          const newCard = this.cardFactory.createCard(cardType, cardType);
+          const newCard = this.cardFactory.createCard(cardType, cardType, {
+            imgUrl: cardType === 'NEUTRAL' ? this.czn.neutralCardUrl : this.czn.monsterCardUrl,
+          });
           const updatedChar = structuredClone(char);
           updatedChar.deck.push(newCard);
           return updatedChar;
-        }
-        return char;
-      }),
-    );
-  }
-
-  addInitialCards(id: number): void {
-    this.saveSnapshot('Añadir cartas iniciales');
-    this.characters.update((chars) =>
-      chars.map((char) => {
-        if (char.id === id) {
-          return {
-            ...char,
-            deck: [...char.deck, ...this.cardFactory.createInitialDeck()],
-          };
         }
         return char;
       }),
@@ -193,6 +174,7 @@ export class FaintMemoryState {
             const newCard = this.cardFactory.createCard(originalCard.type, originalCard.name, {
               isDuplicate: true,
               epiphanyLogs: originalCard.epiphanyLogs,
+              imgUrl: originalCard.imgUrl,
             });
             updatedChar.deck.push(newCard);
             updatedChar.actionLogs.duplications += 1;
@@ -216,6 +198,7 @@ export class FaintMemoryState {
             if (index === cardIndex) {
               return this.cardFactory.createCard('NEUTRAL', 'NEUTRAL', {
                 isConvertion: true,
+                imgUrl: this.czn.neutralCardUrl,
               });
             }
             return card;

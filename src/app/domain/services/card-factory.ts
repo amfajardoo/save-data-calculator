@@ -15,19 +15,13 @@ export class CardFactory {
       epiphanyLogs: [],
       isConvertion: false,
       isDuplicate: false,
+      imgUrl: '',
       ...options,
     };
   }
 
   createCardsBatch(count: number, type: CardType, baseName: string): CardInstance[] {
     return Array.from({ length: count }, (_, i) => this.createCard(type, `${baseName} ${i + 1}`));
-  }
-
-  createInitialDeck(): CardInstance[] {
-    return [
-      ...this.createCardsBatch(4, 'BASIC', 'Básica'),
-      ...this.createCardsBatch(4, 'UNIQUE', 'Única'),
-    ];
   }
 
   private generateCardId(type: CardType): string {
