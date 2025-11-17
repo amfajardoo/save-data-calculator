@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CardInstance, CardType } from '../models';
 
-type CreateCardOptions = Partial<Omit<CardInstance, 'id' | 'type' | 'name'>>;
+type CreateCardOptions = Partial<Omit<CardInstance, 'type' | 'name'>>;
 
 @Injectable({ providedIn: 'root' })
 export class CardFactory {
@@ -24,7 +24,7 @@ export class CardFactory {
     return Array.from({ length: count }, (_, i) => this.createCard(type, `${baseName} ${i + 1}`));
   }
 
-  private generateCardId(type: CardType): string {
+  generateCardId(type: CardType): string {
     this.cardIdCounter++;
     const idType = type === 'FORBIDDEN' ? 'NEUTRAL' : type.charAt(0);
     return `${idType}_${this.cardIdCounter}`;

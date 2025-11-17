@@ -126,7 +126,8 @@ export class FaintMemoryState {
     this.characters.update((chars) =>
       chars.map((char) => {
         if (char.id === id) {
-          const newCard = this.cardFactory.createCard(cardType, cardType, {
+          const name = cardType === 'NEUTRAL' ? 'NEUTRAL / FORBIDDEN' : 'MONSTER';
+          const newCard = this.cardFactory.createCard(cardType, name, {
             imgUrl: cardType === 'NEUTRAL' ? this.czn.neutralCardUrl : this.czn.monsterCardUrl,
           });
           const updatedChar = structuredClone(char);
@@ -168,10 +169,15 @@ export class FaintMemoryState {
       chars.map((char) => {
         if (char.id === id) {
           const updatedChar = structuredClone(char);
-          const originalCard = updatedChar.deck.find((card) => card.id === cardId);
+          const cardFound = updatedChar.deck.find((card) => card.id === cardId);
+
+          if (!cardFound) return updatedChar;
+
+          const originalCard = structuredClone(cardFound);
 
           if (originalCard) {
             const newCard = this.cardFactory.createCard(originalCard.type, originalCard.name, {
+              id: this.cardFactory.generateCardId(originalCard.type),
               isDuplicate: true,
               epiphanyLogs: originalCard.epiphanyLogs,
               imgUrl: originalCard.imgUrl,
