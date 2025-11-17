@@ -217,14 +217,14 @@ const CHARACTERS: CharacterOption[] = [
     baseCards: [],
     uniqueCards: [],
   },
-  // {
-  //   name: 'Yuki',
-  //   imageUrl: `${CHARACTER_IMG}/yuki.webp`,
-  //   cardsImgUrl: generateCardUrls('Yuki'),
-  //   portraitUrl: generatePortraitUrl('Yuki'),
-  //   baseCards: [],
-  //   uniqueCards: [],
-  // },
+  {
+    name: 'Yuki',
+    imageUrl: `${CHARACTER_IMG}/yuki.webp`,
+    cardsImgUrl: generateCardUrls('Yuki'),
+    portraitUrl: generatePortraitUrl('Yuki'),
+    baseCards: [],
+    uniqueCards: [],
+  },
 ];
 
 @Injectable({
