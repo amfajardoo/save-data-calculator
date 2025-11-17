@@ -132,7 +132,7 @@ const CHARACTERS: CharacterOption[] = [
   {
     name: 'Mei Lin',
     imageUrl: `${CHARACTER_IMG}/mei-lin.webp`,
-    cardsImgUrl: generateCardUrls('Mei Lin'),
+    cardsImgUrl: generateCardUrls('Mei%20Lin'),
     portraitUrl: generatePortraitUrl('Mei Lin'),
     baseCards: [],
     uniqueCards: [],
