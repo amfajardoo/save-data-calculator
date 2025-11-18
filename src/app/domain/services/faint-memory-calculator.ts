@@ -79,7 +79,7 @@ export class FaintMemoryCalculator {
         if (log.type === 'DIVINE') {
           divineCount++;
         } else if (log.type === 'REGULAR') {
-          if ((card.type === 'NEUTRAL' && !card.isConvertion) || card.type === 'FORBIDDEN') {
+          if (card.type === 'NEUTRAL' || card.type === 'FORBIDDEN') {
             regularCounts['NEUTRAL_FORBIDDEN']++;
           } else if (card.type === 'MONSTER') {
             regularCounts['MONSTER']++;
