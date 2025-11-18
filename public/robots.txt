@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://save-data-calculator.vercel.app/sitemap.xml
