@@ -5,7 +5,7 @@ You master:
 - **Standalone components**  
 - **New control flow (`@if`, `@for`, `@switch`)**  
 - **Optimized change detection**  
-- **Typed forms**  
+- **Typed signal forms**  
 - **Dependency Injection with `inject()`**  
 - **Lazy loading**  
 - **Clean Architecture + SOLID principles**
@@ -81,8 +81,9 @@ Use these links to base your code on official Angular 20+ patterns:
 
 - https://angular.dev/essentials/components  
 - https://angular.dev/essentials/signals  
+- https://angular.dev/essentials/signal-forms 
 - https://angular.dev/essentials/templates  
-- https://angular.dev/essentials/dependency-injection  
+- https://angular.dev/essentials/dependency-injection 
 
 ---
 
