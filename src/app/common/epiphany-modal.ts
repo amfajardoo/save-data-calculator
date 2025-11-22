@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { computed } from '@angular/core';
@@ -15,7 +15,7 @@ export type EpiphanyModalData = {
 
 @Component({
   selector: 'app-epiphany-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
     <div class="bg-gray-800 rounded-xl p-6 max-w-sm w-full border border-yellow-500 shadow-2xl">
       <h3 class="text-xl font-bold mb-5 text-yellow-400 text-center">

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { Dialog } from '@angular/cdk/dialog';
 import { AddCardModal } from '@app/common/add-card-modal';
 import { FAINT_MEMORY_CONTRIBUTION, EPIPHANY_MODIFIERS, ACTION_COSTS } from '@app/common/constants';
@@ -16,7 +16,7 @@ import { SelectCharacterModal } from '@app/common/select-character-modal';
 @Component({
   selector: 'app-save-data',
   standalone: true,
-  imports: [CommonModule, FormsModule, GlobalConfigComponent, CharacterDataComponent, UndoButton],
+  imports: [FormsModule, GlobalConfigComponent, CharacterDataComponent, UndoButton],
   templateUrl: './save-data.html',
   styleUrl: './save-data.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

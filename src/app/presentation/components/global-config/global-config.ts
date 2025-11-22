@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { GlobalRunState } from '@app/domain/models';
 
 @Component({
   selector: 'app-global-config',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './global-config.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

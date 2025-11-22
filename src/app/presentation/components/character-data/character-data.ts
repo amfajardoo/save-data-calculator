@@ -6,7 +6,7 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { FAINT_MEMORY_CONTRIBUTION, ACTION_COSTS } from '@app/common/constants';
 import { EpiphanyTargetCard, CardInstance } from '@app/domain/models';
@@ -19,7 +19,7 @@ import {
 @Component({
   selector: 'app-character-data',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './character-data.html',
   styleUrl: './character-data.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

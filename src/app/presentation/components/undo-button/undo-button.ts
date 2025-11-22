@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-undo-button',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <button
       (click)="onUndo.emit()"

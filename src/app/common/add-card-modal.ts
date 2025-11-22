@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { CardType } from '@app/domain/models';
 import { FaintMemoryState } from '@app/domain/services/faint-memory-state';
@@ -10,7 +10,7 @@ export type AddCardModalData = { characterId: number };
 @Component({
   selector: 'app-add-card-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="bg-gray-800 rounded-xl p-6 max-w-sm w-full border border-purple-500 shadow-2xl">
       <h3 class="text-xl font-bold mb-5 text-purple-400 text-center">Elige el tipo de Carta</h3>
